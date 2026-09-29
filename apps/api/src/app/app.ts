@@ -1,9 +1,11 @@
 import * as path from 'path';
 import type { FastifyInstance } from 'fastify';
 import AutoLoad from '@fastify/autoload';
+import { processJobs } from '@schedule-parser/jobs';
 
 /* eslint-disable-next-line */
-export interface AppOptions { }
+export interface AppOptions {
+}
 
 export async function app(fastify: FastifyInstance, opts: AppOptions) {
   // Place here your custom code!
@@ -15,13 +17,16 @@ export async function app(fastify: FastifyInstance, opts: AppOptions) {
   // through your application
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'plugins'),
-    options: { ...opts },
+    options: { ...opts }
   });
 
   // This loads all plugins defined in routes
   // define your routes in one of these
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'routes'),
-    options: { ...opts },
+    options: { ...opts }
   });
+
+  // start
+  setInterval(processJobs, 2*1000);
 }

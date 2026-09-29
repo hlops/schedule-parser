@@ -10,11 +10,33 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "strict": false,
-    "paths": {}
+    "paths": {
+      "@schedule-parser/shared": [
+        "./libs/shared/src/index.ts"
+      ],
+      "@schedule-parser/gemini": [
+        "./libs/gemini/src/index.ts"
+      ],
+      "@schedule-parser/ha": [
+        "./libs/ha/src/index.ts"
+      ],
+      "@schedule-parser/db": [
+        "./libs/db/src/index.ts"
+      ],
+      "@schedule-parser/jobs": [
+        "./libs/jobs/src/index.ts"
+      ]
+    }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }

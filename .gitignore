@@ -38,6 +38,10 @@ testem.log
 .DS_Store
 Thumbs.db
 
+# локальные артефакты рантайма (пути считаются от process.cwd())
+/uploads
+/data
+
 .nx/cache
 .nx/workspace-data
 .nx/migrate-runs

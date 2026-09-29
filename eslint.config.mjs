@@ -28,12 +28,26 @@ export default [
                         "^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$"
                     ],
                     depConstraints: [
-                        {
-                            sourceTag: "*",
-                            onlyDependOnLibsWithTags: [
-                                "*"
-                            ]
-                        }
+                      // Серверные приложения и либы могут зависеть только от серверных и shared
+                      {
+                        sourceTag: 'scope:server',
+                        onlyDependOnLibsWithTags: ['scope:server', 'scope:shared'],
+                      },
+                      // Клиентские приложения могут зависеть только от клиентских и shared
+                      {
+                        sourceTag: 'scope:client',
+                        onlyDependOnLibsWithTags: ['scope:client', 'scope:shared'],
+                      },
+                      // Shared-либы могут зависеть только от других shared-либ
+                      {
+                        sourceTag: 'scope:shared',
+                        onlyDependOnLibsWithTags: ['scope:shared'],
+                      },
+                      // Приложения не могут зависеть от других приложений
+                      {
+                        sourceTag: 'type:app',
+                        onlyDependOnLibsWithTags: ['type:lib'],
+                      },
                     ]
                 }
             ]

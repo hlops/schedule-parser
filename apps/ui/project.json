@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/ui/src",
   "projectType": "application",
-  "tags": [],
+  "tags": ["scope:client", "type:app"],
   "targets": {
     "lint": {
       "command": "eslint apps/ui/**/*.{ts,svelte,spec.ts}"
