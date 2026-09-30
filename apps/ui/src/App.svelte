@@ -1,4 +1,5 @@
 <script lang="ts">
+	import './lib/wired';
 	import { DEFAULT_TAB, TABS, type TabId } from './lib/tabs';
 	import DashboardView from './lib/views/DashboardView.svelte';
 	import JobsView from './lib/views/JobsView.svelte';
@@ -7,31 +8,29 @@
 	let activeTab = $state<TabId>(DEFAULT_TAB);
 </script>
 
-<div class="app">
+<div class="mx-auto max-w-4xl">
 	<header>
-		<h1>ScheduleParser</h1>
+		<h1 class="my-2 text-2xl">ScheduleParser</h1>
 
-		<ul class="tabs" role="tablist">
+		<wired-divider class="pb-3" elevation={2}></wired-divider>
+
+		<div role="tablist">
 			{#each TABS as tab (tab.id)}
-				<li class="tab-item">
-					<button
-						type="button"
-						role="tab"
-						id={`tab-${tab.id}`}
-						class="tab"
-						class:active={activeTab === tab.id}
-						aria-selected={activeTab === tab.id}
-						aria-controls={`panel-${tab.id}`}
-						onclick={() => (activeTab = tab.id)}
-					>
-						{tab.label}
-					</button>
-				</li>
+				<wired-item
+					role="tab"
+					id={`tab-${tab.id}`}
+					aria-selected={activeTab === tab.id}
+					aria-controls={`panel-${tab.id}`}
+					selected={activeTab === tab.id}
+					onclick={() => (activeTab = tab.id)}
+				>
+					{tab.label}
+				</wired-item>
 			{/each}
-		</ul>
+		</div>
 	</header>
 
-	<main>
+	<main class="py-4">
 		<div id={`panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
 			{#if activeTab === 'dashboard'}
 				<DashboardView />
@@ -44,55 +43,3 @@
 	</main>
 </div>
 
-<style>
-	.app {
-		max-width: 1024px;
-		margin: 0 auto;
-	}
-
-	header {
-		border-bottom: 1px solid #eee;
-	}
-
-	h1 {
-		margin: 0.4em 0;
-		font-size: 1.4em;
-	}
-
-	.tabs {
-		display: flex;
-		gap: 0.25em;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.tab-item {
-		display: flex;
-	}
-
-	.tab {
-		margin: 0;
-		padding: 0.5em 1em;
-		color: #666;
-		background: transparent;
-		border: none;
-		border-bottom: 2px solid transparent;
-		border-radius: 0;
-		cursor: pointer;
-	}
-
-	.tab:hover {
-		color: #333;
-		background: #f4f4f4;
-	}
-
-	.tab.active {
-		color: #ff3e00;
-		border-bottom-color: #ff3e00;
-	}
-
-	main {
-		padding: 1em 0;
-	}
-</style>

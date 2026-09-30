@@ -7,4 +7,4 @@ export const TABS = [
 
 export type TabId = (typeof TABS)[number]['id'];
 
-export const DEFAULT_TAB: TabId = 'dashboard';
+export const DEFAULT_TAB: TabId = 'jobs';
