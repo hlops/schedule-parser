@@ -1,0 +1,8 @@
+{
+  "name": "@schedule-parser/dto",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "dependencies": {}
+}

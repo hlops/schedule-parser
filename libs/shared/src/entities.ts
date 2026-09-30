@@ -32,11 +32,3 @@ export interface ParseJob extends Job {
 export interface ScheduleJob extends Job {
   schedule?: string;
 }
-
-export interface LogEntry {
-  hash: string | null;
-  level: 'info' | 'warn' | 'error';
-  message: string;
-  timestamp: number;
-}
-

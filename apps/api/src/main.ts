@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import { app } from './app/app';
 import { mkdir } from 'node:fs/promises';
 import { UPLOADS_DIR } from '@schedule-parser/shared';
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -9,8 +10,8 @@ const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 // Instantiate Fastify with some config
 const server = Fastify({
   logger: true,
-  bodyLimit: 30 * 1024 * 1024, // 30 МБ для base64-роута
-});
+  bodyLimit: 30 * 1024 * 1024 // 30 МБ для base64-роута
+}).withTypeProvider<TypeBoxTypeProvider>();
 
 // Register your application as a normal plugin.
 server.register(app);

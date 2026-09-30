@@ -3,12 +3,18 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/api/src",
   "projectType": "application",
-  "tags": ["scope:server", "type:app"],
+  "tags": [
+    "scope:server",
+    "type:app"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/esbuild:esbuild",
       "outputs": [
         "{options.outputPath}"
+      ],
+      "dependsOn": [
+        "generate-types"
       ],
       "defaultConfiguration": "production",
       "options": {
@@ -95,6 +101,19 @@
         "production": {
           "buildTarget": "api:build:production"
         }
+      }
+    },
+    "generate-types": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        { "projects": ["dto"], "target": "build" }
+      ],
+      "outputs": ["{projectRoot}/src/generated/typebox.ts"],
+      "options": {
+        "commands": [
+          "npx ts2typebox -i dist/libs/dto/index.d.ts -o apps/api/src/generated/typebox.ts"
+        ],
+        "cwd": "."
       }
     }
   }
