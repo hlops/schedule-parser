@@ -18,6 +18,8 @@ export default async function(fastify: FastifyTypeBox) {
     const { from, pageSize } = request.query;
 
     const db = await getDb();
-    return getPage(db.data.jobs, from, pageSize);
+    const jobs = [...db.data.jobs];
+    jobs.reverse();
+    return getPage(jobs, from, pageSize);
   });
 }

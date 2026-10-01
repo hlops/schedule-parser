@@ -9,6 +9,10 @@ const apiProxy = {
   '/api': {
     target: process.env.API_URL ?? 'http://localhost:3000',
     changeOrigin: true
+  },
+  '/upload': {
+    target: process.env.API_URL ?? 'http://localhost:3000',
+    changeOrigin: true
   }
 };
 

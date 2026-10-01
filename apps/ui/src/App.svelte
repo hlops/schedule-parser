@@ -4,8 +4,14 @@
 	import DashboardView from './lib/views/DashboardView.svelte';
 	import JobsView from './lib/views/JobsView.svelte';
 	import LogsView from './lib/views/LogsView.svelte';
+  import dayjs from 'dayjs';
+  import 'dayjs/locale/ru';
 
 	let activeTab = $state<TabId>(DEFAULT_TAB);
+
+  $effect(() => {
+    dayjs.locale('ru');
+  })
 </script>
 
 <div class="mx-auto max-w-4xl">
