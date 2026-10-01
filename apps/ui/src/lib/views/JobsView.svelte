@@ -15,28 +15,31 @@
         <table width="100%">
           <thead>
           <tr class="text-left">
-            <th>#</th>
-            <th>дата</th>
             <th>картинка</th>
             <th>id</th>
+            <th>дата</th>
             <th>тип</th>
             <th>статус</th>
           </tr>
           </thead>
           <tbody>
-          {#each jobsStore.jobs as job, i (`${job.id}`)}
+          {#each jobsStore.jobs as jobs, i (`${jobs[0].fileName}`)}
             <tr>
-              <td>{i + 1}.</td>
-              <td>{dayjs(job.startAt).format('D MMM hh:mm')}</td>
-              <td>
-                <a href={`uploads/${job.fileName}`} target="_blank" rel="noopener noreferrer">
-                  <img src={`uploads/${job.fileName}`} alt="" width="100px" />
+              <td rowspan="{jobs.length+1}">
+                {i+1}.
+                <a href={`uploads/${jobs[0].fileName}`} target="_blank" rel="noopener noreferrer">
+                  <img src={`uploads/${jobs[0].fileName}`} alt="" width="100px" />
                 </a>
               </td>
-              <td>{job.id}</td>
-              <td>{job.type}</td>
-              <td>{job.status}</td>
             </tr>
+            {#each jobs as job (job.id)}
+              <tr>
+                <td>{job.id}</td>
+                <td>{dayjs(job.startAt).format('D MMM hh:mm')}</td>
+                <td>{job.type}</td>
+                <td>{job.status}</td>
+              </tr>
+            {/each}
           {/each}
           </tbody>
         </table>

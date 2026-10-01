@@ -3,7 +3,7 @@
  *
  * Бэкенд (`apps/api/src/app/routes/jobs.ts`) принимает `from` и `pageSize`
  * (значения по умолчанию 0 и 20, `pageSize` не больше 200) и отдаёт
- * `PageDto<JobDto>`: `pages` — элементы текущей страницы, `total` — размер
+ * `PageDto<JobDto[]>`: `pages` — элементы текущей страницы, `total` — размер
  * всей выборки. `from` — это смещение: сервер режет массив через
  * `slice(from, from + pageSize)`, поэтому начало страницы считается как
  * `(page - 1) * pageSize`.
@@ -47,7 +47,7 @@ export function createJobsStore(options: JobsStoreOptions = {}) {
   const baseUrl = (options.baseUrl ?? import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
   const fetchFn: typeof fetch = options.fetchFn ?? ((input, init) => globalThis.fetch(input, init));
 
-  let jobs = $state<JobDto[]>([]);
+  let jobs = $state<JobDto[][]>([]);
   let total = $state(0);
   let from = $state(0);
   let pageSize = $state(toPageSize(options.pageSize ?? DEFAULT_PAGE_SIZE));
@@ -78,7 +78,7 @@ export function createJobsStore(options: JobsStoreOptions = {}) {
         throw new Error(`GET /api/jobs → ${response.status} ${response.statusText}`.trim());
       }
 
-      const result: PageDto<JobDto> = await response.json();
+      const result: PageDto<JobDto[]> = await response.json();
       if (id !== requestId) {
         return;
       }

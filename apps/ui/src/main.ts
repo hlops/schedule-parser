@@ -5,7 +5,7 @@ import './global.css';
 const target = document.getElementById('app');
 
 if (!target) {
-	throw new Error('Не найден контейнер #app');
+  throw new Error('Не найден контейнер #app');
 }
 
 const app = mount(App, { target });

@@ -2,6 +2,8 @@ import { getDb } from '@schedule-parser/db';
 import { FastifyTypeBox } from '../types';
 import { JobDtoSchema, PageDtoSchema, PageQueryDtoSchema } from '../../generated/typebox';
 import { getPage } from '../utils/common';
+import { JobDto } from '@schedule-parser/dto';
+import { Type } from '@sinclair/typebox';
 
 export default async function(fastify: FastifyTypeBox) {
   fastify.get('/api/jobs', {
@@ -11,7 +13,7 @@ export default async function(fastify: FastifyTypeBox) {
       summary: 'get available dictionaries',
       querystring: PageQueryDtoSchema,
       response: {
-        200: PageDtoSchema(JobDtoSchema)
+        200: PageDtoSchema(Type.Array(JobDtoSchema))
       }
     }
   }, async request => {
@@ -20,6 +22,17 @@ export default async function(fastify: FastifyTypeBox) {
     const db = await getDb();
     const jobs = [...db.data.jobs];
     jobs.reverse();
-    return getPage(jobs, from, pageSize);
+
+    const groupedJobs = jobs.reduce<Record<string, JobDto[]>>((acc, value) => {
+      if (!acc[value.fileName]) {
+        acc[value.fileName] = [];
+      }
+      acc[value.fileName].push(value);
+      return acc;
+    }, {});
+
+    const result = Object.keys(groupedJobs).map(key => groupedJobs[key], []);
+
+    return getPage(result, from, pageSize);
   });
 }

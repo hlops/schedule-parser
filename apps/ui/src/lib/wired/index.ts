@@ -12,3 +12,4 @@
 import 'wired-elements/lib/wired-card.js';
 import 'wired-elements/lib/wired-divider.js';
 import 'wired-elements/lib/wired-item.js';
+import 'wired-elements/lib/wired-checkbox.js';
