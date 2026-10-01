@@ -4,16 +4,26 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import tailwindcss from '@tailwindcss/vite';
 
+/** Бэкенд для прокси `/api`: `nx serve api` слушает 3000, CORS на стороне Fastify не настроен */
+const apiProxy = {
+  '/api': {
+    target: process.env.API_URL ?? 'http://localhost:3000',
+    changeOrigin: true
+  }
+};
+
 export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/apps/ui',
   server: {
     port: 4200,
-    host: 'localhost'
+    host: 'localhost',
+    proxy: apiProxy
   },
   preview: {
     port: 4300,
-    host: 'localhost'
+    host: 'localhost',
+    proxy: apiProxy
   },
   plugins: [tailwindcss(), svelte(), svelteTesting()],
   // Uncomment this if you are using workers.

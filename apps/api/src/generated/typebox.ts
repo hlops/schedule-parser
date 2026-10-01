@@ -10,6 +10,7 @@ import { Type, Static, TSchema } from "@sinclair/typebox";
 
 export type JobDtoType = Static<typeof JobDtoSchema>;
 export const JobDtoSchema = Type.Object({
+  id: Type.String(),
   fileName: Type.String(),
   type: Type.Union([
     Type.Literal("check"),

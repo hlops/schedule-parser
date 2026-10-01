@@ -14,7 +14,7 @@ export default async function(fastify: FastifyTypeBox) {
         200: PageDtoSchema(JobDtoSchema)
       }
     }
-  }, async function(request) {
+  }, async request => {
     const { from, pageSize } = request.query;
 
     const db = await getDb();

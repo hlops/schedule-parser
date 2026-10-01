@@ -73,6 +73,7 @@
     "@sinclair/typebox": "^0.34.52",
     "fastify": "~5.2.1",
     "fastify-plugin": "~5.0.1",
+    "human-id": "^4.2.1",
     "lowdb": "^7.0.1",
     "sharp": "^0.35.5",
     "wired-elements": "^3.0.0-rc.6"
@@ -82,5 +83,13 @@
       "typescript": "$typescript"
     },
     "roughjs": "4.3.1"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "cypress@15.21.1": true,
+    "esbuild@0.27.7": true,
+    "nx@23.2.1": true,
+    "svelte-preprocess@6.0.5": true,
+    "unrs-resolver@1.12.2": true
   }
 }

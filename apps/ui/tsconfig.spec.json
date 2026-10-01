@@ -7,7 +7,9 @@
       "vitest/importMeta",
       "vite/client",
       "node",
-      "vitest"
+      "vitest",
+      // спеки импортируют сторы из `.svelte.ts`, а руны ($state/$derived) объявлены в типах svelte
+      "svelte"
     ]
   },
   "include": [

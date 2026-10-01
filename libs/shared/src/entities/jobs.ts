@@ -1,4 +1,5 @@
 export interface Job {
+  id: string;
   fileName: string;
   type: 'check' | 'parse' | 'schedule'
   status: 'new' | 'done' | 'error';
