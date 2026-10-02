@@ -15,6 +15,13 @@
         "cwd": "apps/ui"
       }
     },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "svelte-check",
+        "cwd": "apps/ui"
+      }
+    },
     "build": {
       "outputs": [
         "{projectRoot}/{options.outDir}",

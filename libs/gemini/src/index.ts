@@ -19,6 +19,9 @@ export const parseImage = async (fileName: string): Promise<string> => {
   const proxyUrl = process.env['GEMINI_PROXY_URL'];
   const url = `${proxyUrl}/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
+  if (!apiKey) {
+    throw new Error('No api key found.');
+  }
 
   let buffer: Buffer;
   try {
@@ -60,7 +63,7 @@ export const parseImage = async (fileName: string): Promise<string> => {
       headers: {
         'Content-Type': 'application/json',
         'x-goog-api-key': apiKey
-      } as any,
+      },
       body: JSON.stringify(payload)
     });
   } catch (err) {

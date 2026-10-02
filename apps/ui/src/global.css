@@ -80,7 +80,7 @@ wired-item {
    Размер берём из переменной wired-icon-button, чтобы кнопка управляла
    размером иконки; вне кнопки работает дефолт 24px. */
 mwc-icon {
-  font-family: 'Material Symbols Outlined';
+  font-family: 'Material Symbols Outlined', serif;
   font-weight: normal;
   font-style: normal;
   font-size: var(--wired-icon-size, 24px);

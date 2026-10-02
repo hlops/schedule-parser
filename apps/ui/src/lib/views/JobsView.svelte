@@ -51,7 +51,7 @@
   <wired-card>
     <h2 class="m-0 mb-3">Джобы ({jobsStore.total})</h2>
     <div class="scroll-container">
-      <wired-card elevation="2">
+      <wired-card elevation={2}>
         <div class="jobs-row-grid">
           <!-- Header -->
           <div class="contents text-left font-semibold">
@@ -86,6 +86,10 @@
                 <JobStatus status={computeJobsStatus(jobs, 'schedule')} />
               </div>
               <div>
+                <!-- wired-icon-button рендерит внутри shadow DOM нативный <button>,
+                     который сам получает фокус и обрабатывает Enter/Space, поэтому
+                     элемент интерактивен — статический анализатор Svelte shadow DOM не видит. -->
+                <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
                 <wired-icon-button onclick={() => openState[jobId] = !openState[jobId]}>
                   {#if openState[jobId]}
                     <mwc-icon class="small">collapse_all</mwc-icon>
@@ -114,6 +118,9 @@
                       <div>{job.status}</div>
                       <div>
                         {#if job.status === 'error'}
+                          <!-- wired-icon-button рендерит внутри shadow DOM нативный <button>,
+                               который сам получает фокус и обрабатывает Enter/Space. -->
+                          <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
                           <wired-icon-button onclick={() => {}}>
                             <mwc-icon class="small">replay</mwc-icon>
                           </wired-icon-button>
