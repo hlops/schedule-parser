@@ -19,6 +19,8 @@ export const JobDtoSchema = Type.Object({
   ]),
   status: Type.Union([
     Type.Literal("new"),
+    Type.Literal("processing"),
+    Type.Literal("pending"),
     Type.Literal("done"),
     Type.Literal("error"),
   ]),

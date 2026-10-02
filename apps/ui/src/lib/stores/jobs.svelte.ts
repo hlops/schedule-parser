@@ -1,30 +1,4 @@
-/**
- * Стор джобов: постраничное чтение из `GET /api/jobs`.
- *
- * Бэкенд (`apps/api/src/app/routes/jobs.ts`) принимает `from` и `pageSize`
- * (значения по умолчанию 0 и 20, `pageSize` не больше 200) и отдаёт
- * `PageDto<JobDto[]>`: `pages` — элементы текущей страницы, `total` — размер
- * всей выборки. `from` — это смещение: сервер режет массив через
- * `slice(from, from + pageSize)`, поэтому начало страницы считается как
- * `(page - 1) * pageSize`.
- *
- * В dev/preview базового URL не нужно: `/api` проксируется на бэкенд
- * (см. `vite.config.mts`), поэтому запросы идут на тот же origin.
- *
- * Пример использования в компоненте:
- *
- * ```svelte
- * <script lang="ts">
- *   import { jobsStore } from '../stores/jobs.svelte';
- *
- *   $effect(() => {
- *     void jobsStore.load();
- *   });
- * </script>
- *
- * <p>страница {jobsStore.page} из {jobsStore.pageCount}, всего {jobsStore.total}</p>
- * ```
- */
+
 import type { JobDto, PageDto } from '@schedule-parser/dto';
 
 /** Значения по умолчанию из схемы `PageQueryDto` */

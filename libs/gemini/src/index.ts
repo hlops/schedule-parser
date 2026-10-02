@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
 
-const GEMINI_MODEL = 'gemini-3.8-flash' as const;
+const GEMINI_MODEL = 'gemini-3.6-flash' as const;
 
 // todo: вынести в shared
 const MIME_BY_EXT: Record<string, string> = {

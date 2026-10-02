@@ -70,3 +70,28 @@ wired-card {
 wired-item {
   font-size: 32px;
 }
+
+/* mwc-icon — иконки Material Symbols по лигатурам: в разметке пишется имя
+   иконки текстом (`<mwc-icon>download</mwc-icon>`), а шрифт подменяет его
+   глифом. Отдельного веб-компонента нет — тег стилизуется как обычный
+   инлайновый элемент, поэтому поддержка не тянет зависимостей.
+   Шрифт подключён в index.html.
+
+   Размер берём из переменной wired-icon-button, чтобы кнопка управляла
+   размером иконки; вне кнопки работает дефолт 24px. */
+mwc-icon {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: var(--wired-icon-size, 24px);
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}

@@ -20,10 +20,7 @@ export default async function(fastify: FastifyTypeBox) {
     const { from, pageSize } = request.query;
 
     const db = await getDb();
-    const jobs = [...db.data.jobs];
-    jobs.reverse();
-
-    const groupedJobs = jobs.reduce<Record<string, JobDto[]>>((acc, value) => {
+    const groupedJobs = db.data.jobs.reduce<Record<string, JobDto[]>>((acc, value) => {
       if (!acc[value.fileName]) {
         acc[value.fileName] = [];
       }
@@ -31,7 +28,7 @@ export default async function(fastify: FastifyTypeBox) {
       return acc;
     }, {});
 
-    const result = Object.keys(groupedJobs).map(key => groupedJobs[key], []);
+    const result = Object.keys(groupedJobs).reverse().map(key => groupedJobs[key], []);
 
     return getPage(result, from, pageSize);
   });
