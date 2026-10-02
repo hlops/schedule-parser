@@ -12,7 +12,7 @@
     <h2 class="m-0 mb-3">Джобы ({jobsStore.total})</h2>
     <div class="scroll-container">
       <wired-card elevation="2">
-        <table width="100%">
+        <table class="w-full">
           <thead>
           <tr class="text-left">
             <th>картинка</th>
