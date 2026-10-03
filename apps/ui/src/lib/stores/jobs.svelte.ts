@@ -38,6 +38,17 @@ export function createJobsStore(options: JobsStoreOptions = {}) {
   /** Номер последнего запроса: ответы устаревших запросов игнорируются */
   let requestId = 0;
 
+  /** Зафиксировать ошибку запроса `id`, если он всё ещё актуален: список очищается */
+  function setError(message: string, id: number): void {
+    if (id !== requestId) {
+      return;
+    }
+
+    jobs = [];
+    total = 0;
+    error = message;
+  }
+
   /** Загрузить текущую страницу */
   async function load(): Promise<void> {
     const id = ++requestId;
@@ -49,7 +60,9 @@ export function createJobsStore(options: JobsStoreOptions = {}) {
       const response = await fetchFn(`${baseUrl}/api/jobs?${query}`);
 
       if (!response.ok) {
-        throw new Error(`GET /api/jobs → ${response.status} ${response.statusText}`.trim());
+        // Ошибка запроса — это состояние стора, а не исключение: `load()` не отклоняется
+        setError(`GET /api/jobs → ${response.status} ${response.statusText}`.trim(), id);
+        return;
       }
 
       const result: PageDto<JobDto[]> = await response.json();
@@ -60,13 +73,7 @@ export function createJobsStore(options: JobsStoreOptions = {}) {
       jobs = result.pages;
       total = result.total;
     } catch (cause) {
-      if (id !== requestId) {
-        return;
-      }
-
-      jobs = [];
-      total = 0;
-      error = cause instanceof Error ? cause.message : String(cause);
+      setError(cause instanceof Error ? cause.message : String(cause), id);
     } finally {
       if (id === requestId) {
         loading = false;
@@ -104,6 +111,10 @@ export function createJobsStore(options: JobsStoreOptions = {}) {
     /** Элементы текущей страницы */
     get jobs() {
       return jobs;
+    },
+    async reload(id) {
+      await fetchFn(`${baseUrl}/api/jobs/restart/${id}`, {method: 'PUT'});
+      await this.load();
     },
     /** Размер всей выборки, не только текущей страницы */
     get total() {
@@ -144,8 +155,6 @@ export function createJobsStore(options: JobsStoreOptions = {}) {
     setPageSize
   };
 }
-
-export type JobsStore = ReturnType<typeof createJobsStore>;
 
 /** Общий стор приложения */
 export const jobsStore = createJobsStore();

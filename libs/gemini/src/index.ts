@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
 
-const GEMINI_MODEL = 'gemini-3.6-flash' as const;
+const GEMINI_MODEL = 'gemini-3.8-flash' as const;
 
 // todo: вынести в shared
 const MIME_BY_EXT: Record<string, string> = {
@@ -52,7 +52,10 @@ export const parseImage = async (fileName: string): Promise<string> => {
     ],
     generationConfig: {
       responseMimeType: 'application/json',
-      responseSchema: RESPONSE_SCHEMA
+      responseSchema: RESPONSE_SCHEMA,
+      temperature: 0.1,
+      maxOutputTokens: 8192,
+      thinkingConfig: { thinkingBudget: 0 }
     }
   };
 
@@ -79,10 +82,15 @@ export const parseImage = async (fileName: string): Promise<string> => {
     );
   }
 
+  const text = await response.text();
+
   // 5. Парсим ответ
   try {
-    return JSON.parse(await response.json());
+    return JSON.parse(text);
   } catch (err) {
+    console.error(err);
+    console.error(text);
+    console.error(response);
     throw new Error(
       `Gemini вернул невалидный JSON: ${(err as Error).message}`
     );

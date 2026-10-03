@@ -121,20 +121,19 @@
                           <!-- wired-icon-button рендерит внутри shadow DOM нативный <button>,
                                который сам получает фокус и обрабатывает Enter/Space. -->
                           <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-                          <wired-icon-button onclick={() => {}}>
+                          <wired-icon-button onclick={() => jobsStore.reload(job.id)}>
                             <mwc-icon class="small">replay</mwc-icon>
                           </wired-icon-button>
                         {/if}
                       </div>
                     </div>
-
-                    {#if job.error}
-                      <div class="col-span-full text-red-700">
-                        {job.error}
-                      </div>
-                    {/if}
                   {/each}
                 </div>
+              </div>
+            {/if}
+            {#if jobs.at(-1)?.error}
+              <div class="col-span-full text-red-700">
+                {jobs.at(-1).error}
               </div>
             {/if}
           {/each}

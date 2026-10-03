@@ -15,7 +15,6 @@ export const processCheckJob = async (job: CheckJob): Promise<void> => {
     job.metrics = await analyzeImage(job.fileName);
     checkThresholds(job.metrics);
     job.status = 'done';
-    delete job.error;
 
     db.data.jobs.push(createParseJob(job.fileName));
   } catch (err) {
@@ -24,5 +23,4 @@ export const processCheckJob = async (job: CheckJob): Promise<void> => {
   }
 
   job.finishedAt = Date.now();
-  await db.write();
 };

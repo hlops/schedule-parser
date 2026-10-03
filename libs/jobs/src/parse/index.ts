@@ -8,18 +8,24 @@ export const createParseJob = (fileName: string): ParseJob => ({...createJob(fil
 
 export const processParseJob = async (job: ParseJob): Promise<void> => {
   const db = await getDb();
+  const isGeminiBlocked = false;
 
   try {
     const filePath = join(UPLOADS_DIR, job.fileName);
-    job.json = await parseImage(filePath);
-    job.status = 'done';
-    delete job.error;
+    if (!isGeminiBlocked) {
+      job.status = 'processing';
+      // не ждем запись
+      void db.write();
+      job.json = await parseImage(filePath);
+      job.status = 'done';
+      job.finishedAt = Date.now();
+    } else {
+      job.status = 'pending';
+    }
   } catch (err) {
     job.status = 'error';
     job.error = err instanceof Error ? err.message : String(err);
+    job.finishedAt = Date.now();
   }
-
-  job.finishedAt = Date.now();
-  await db.write();
 };
 

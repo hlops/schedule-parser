@@ -1,6 +1,7 @@
 import { Job } from '@schedule-parser/shared';
-import { getDb } from '@schedule-parser/db';
+import { Data, getDb } from '@schedule-parser/db';
 import humanId from 'human-id';
+import { Low } from 'lowdb';
 
 export const createJob = (fileName: string, type: Job['type'], startAt = Date.now()): Job =>
   ({
@@ -11,9 +12,3 @@ export const createJob = (fileName: string, type: Job['type'], startAt = Date.no
     status: 'new',
     startAt
   });
-
-export async function addJob(job: Job): Promise<void> {
-  const db = await getDb();
-  db.data.jobs.push(job);
-  await db.write();
-}
