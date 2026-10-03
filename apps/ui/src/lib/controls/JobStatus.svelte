@@ -1,19 +1,26 @@
 <script lang="ts">
   import type { JobDto } from '@schedule-parser/dto';
+  import { computeJobsStatus } from '../utils/jobs';
 
-  const { status } = $props();
+  interface JobStatusProps {
+    jobs: JobDto[];
+    type: JobDto['type']
+  }
 
-  const ICON_BY_STATUS: Record<JobDto['status'], { icon: string; class?: string }> = {
-    new: { icon: 'circle' },
-    processing: { icon: 'schedule' },
-    pending: { icon: 'run_circle' },
-    done: { icon: 'check_circle', class: 'text-green-700' },
-    error: { icon: 'error', class: 'text-red-700' }
-  };
-
-  const icon = $derived(ICON_BY_STATUS[status] ?? { icon: '', class: '' });
+  const { jobs, type }: JobStatusProps = $props();
+  const job = $derived(jobs.filter(job => job.type == type).at(-1));
 </script>
 
 <div>
-  <mwc-icon class="{icon.class}">{icon.icon}</mwc-icon>
+  {#if job?.status === 'new'}
+    <mwc-icon class="">circle</mwc-icon>
+  {:else if job?.status === 'processing'}
+    <mwc-icon class="">schedule</mwc-icon>
+  {:else if job?.status === 'pending'}
+    <mwc-icon class="">run_circle</mwc-icon>
+  {:else if job?.status === 'done'}
+    <mwc-icon class="text-green-700">check_circle</mwc-icon>
+  {:else if job?.status === 'error'}
+    <mwc-icon class="text-red-700 cursor-pointer" title={job.error}>error</mwc-icon>
+  {/if}
 </div>
