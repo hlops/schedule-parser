@@ -25,9 +25,12 @@ export const processJobs = async (): Promise<void> => {
       busy = true;
 
       const now = Date.now();
-      const readyJobs = db.data.jobs.filter(job => job.status === 'new' && job.startAt <= now);
+      const readyJobs = db.data.jobs.filter(job => ['new', 'processing', 'pending'].includes(job.status) && job.startAt <= now);
 
       for (const job of readyJobs) {
+        job.status = 'processing';
+        await db.write();
+
         switch (job.type) {
           case 'check':
             await processCheckJob(job as CheckJob);

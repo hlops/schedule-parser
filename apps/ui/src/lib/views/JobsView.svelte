@@ -2,7 +2,6 @@
   import { jobsStore } from '../stores/jobs.svelte';
   import dayjs from 'dayjs';
   import JobStatus from '../controls/JobStatus.svelte';
-  import { computeJobsStatus } from '../utils/jobs';
 
   $effect(() => {
     void jobsStore.load();
@@ -41,7 +40,8 @@
                   rel="noopener noreferrer"
                   aria-label={`Открыть картинку ${jobs[0].fileName}`}
                 >
-                  <wired-image elevation={2} src={`uploads/${jobs[0].fileName}`} class="w-100 text-gray-400"></wired-image>
+                  <wired-image elevation={2} src={`uploads/${jobs[0].fileName}`}
+                               class="w-100 text-gray-400"></wired-image>
                 </a>
               </td>
               <td>
@@ -65,21 +65,25 @@
               </td>
             </tr>
             {#if openState[jobId]}
-            {#each jobs as job (job.id)}
-              <tr class="bg-gray-100 text-center">
-                <td></td>
-                <td>{dayjs(job.startAt).format('D MMM hh:mm')}</td>
-                <td>
-                  <JobStatus jobs={[job]} type="check" />
-                </td>
-                <td>
-                  <JobStatus jobs={[job]} type="parse" />
-                </td>
-                <td>
-                  <JobStatus jobs={[job]} type="schedule" />
-                </td>
-              </tr>
-            {/each}
+              {#each jobs as job (job.id)}
+                <tr class="bg-gray-100 text-center">
+                  <td></td>
+                  <td>
+                    <a href="job?id=${job.id}">
+                      {dayjs(job.startAt).format('D MMM hh:mm:ss')}
+                    </a>
+                  </td>
+                  <td>
+                    <JobStatus jobs={[job]} type="check" />
+                  </td>
+                  <td>
+                    <JobStatus jobs={[job]} type="parse" />
+                  </td>
+                  <td>
+                    <JobStatus jobs={[job]} type="schedule" />
+                  </td>
+                </tr>
+              {/each}
             {/if}
           {/each}
           </tbody>

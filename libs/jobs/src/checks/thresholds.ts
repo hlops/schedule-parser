@@ -20,11 +20,11 @@ export const checkThresholds = (metrics: CheckJob['metrics']) => {
   // --- Средние признаки ---
   if (metrics.avgSaturation < 0.15) score += 0.20;
 
-  if (metrics.grayscale > 0.85) score += 0.10;
+  if (metrics.grayscale > 0.85) score += 0.15;
   if (metrics.avgLuminance > 200) score += 0.10;
 
   // --- Энтропия (главный дискриминатор фото/документ) ---
-  if (metrics.entropy < 5.5) score += 0.15;
+  if (metrics.entropy < 6) score += 0.15;
   else if (metrics.entropy > 7.0) score -= 0.25;
 
   // --- Размеры ---
@@ -34,8 +34,8 @@ export const checkThresholds = (metrics: CheckJob['metrics']) => {
 
   // --- Аспект (расширен под широкие таблицы) ---
   const aspectRatio = metrics.width / metrics.height;
-  if (aspectRatio >= 1.2 && aspectRatio <= 3.5) score += 0.10;
-  else if (aspectRatio > 5.0 || aspectRatio < 0.4) score -= 0.30;
+  if (aspectRatio >= 1.5) score += 0.10;
+  else if (aspectRatio < 1) score -= 0.30;
 
   // --- Анти-признаки ---
   if (metrics.avgSaturation > 0.40) score -= 0.20;

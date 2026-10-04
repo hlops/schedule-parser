@@ -7,6 +7,7 @@ import { mkdir } from 'node:fs/promises';
 // Типы для вашей БД
 export interface Data {
   jobs: Job[];
+  models: Record<string, unknown>;
 }
 
 // Синглтон-экземпляр
@@ -21,7 +22,7 @@ export async function getDb(): Promise<Low<Data>> {
   const adapter = new JSONFile<Data>(file);
 
   // Дефолтные данные, если файла нет
-  const defaultData: Data = { jobs: [] };
+  const defaultData: Data = { jobs: [], models: {} };
 
   instance = new Low<Data>(adapter, defaultData);
   await instance.read();
