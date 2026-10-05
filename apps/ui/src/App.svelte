@@ -1,13 +1,13 @@
 <script lang="ts">
 	import './lib/wired';
-	import { DEFAULT_TAB, TABS, type TabId } from './lib/tabs';
-	import DashboardView from './lib/views/DashboardView.svelte';
-	import JobsView from './lib/views/JobsView.svelte';
-	import LogsView from './lib/views/LogsView.svelte';
+	import { Router } from 'sv-router';
+	import { navigate, route } from './lib/router';
+	import { TABS } from './lib/tabs';
   import dayjs from 'dayjs';
   import 'dayjs/locale/ru';
 
-	let activeTab = $state<TabId>(DEFAULT_TAB);
+	/** Активная вкладка выводится из URL — единственный источник истины теперь маршрут */
+	const activeTab = $derived(TABS.find((tab) => route.pathname === tab.path)?.id);
 
   $effect(() => {
     dayjs.locale('ru');
@@ -28,7 +28,7 @@
 					aria-selected={activeTab === tab.id}
 					aria-controls={`panel-${tab.id}`}
 					selected={activeTab === tab.id}
-					onclick={() => (activeTab = tab.id)}
+					onclick={() => navigate(tab.path)}
 				>
 					{tab.label}
 				</wired-item>
@@ -37,14 +37,8 @@
 	</header>
 
 	<main class="py-4">
-		<div id={`panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
-			{#if activeTab === 'dashboard'}
-				<DashboardView />
-			{:else if activeTab === 'jobs'}
-				<JobsView />
-			{:else}
-				<LogsView />
-			{/if}
+		<div role="tabpanel">
+			<Router />
 		</div>
 	</main>
 </div>

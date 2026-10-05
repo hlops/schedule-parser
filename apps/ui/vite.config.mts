@@ -47,11 +47,19 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: 'jsdom',
+    setupFiles: ['src/test-setup.ts'],
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../../coverage/apps/ui',
       provider: 'v8' as const
+    },
+    // sv-router поставляет .svelte-компонент (Router.svelte). Без инлайна
+    // Vitest внешнит пакет из node_modules и не скомпилирует Svelte-файл.
+    server: {
+      deps: {
+        inline: ['sv-router']
+      }
     }
   }
 }));

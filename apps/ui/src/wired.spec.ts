@@ -29,8 +29,11 @@ describe('интеграция с wired-elements', () => {
 		expect(customElements.get('wired-item')).toBeTypeOf('function');
 	});
 
-	it('передаёт selected свойством, а не атрибутом', () => {
+	it('передаёт selected свойством, а не атрибутом', async () => {
 		render(App);
+		// маршрут резолвится асинхронно (корень `/` редиректит на вкладку
+		// по умолчанию), поэтому дожидаемся, пока появится активный таб
+		await screen.findByRole('tab', { selected: true });
 		const all = tabs();
 
 		// независимо от того, какой таб открыт по умолчанию
