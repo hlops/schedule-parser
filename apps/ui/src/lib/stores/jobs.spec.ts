@@ -3,10 +3,10 @@ import type { JobDto, PageDto } from '@schedule-parser/dto';
 import { createJobsStore, DEFAULT_PAGE_SIZE } from './jobs.svelte';
 
 const job = (fileName: string): JobDto => ({
+  id: 'job1',
 	fileName,
 	type: 'check',
 	status: 'done',
-	iteration: 1,
 	startAt: 0
 });
 

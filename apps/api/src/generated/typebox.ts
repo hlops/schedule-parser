@@ -25,10 +25,22 @@ export const JobDtoSchema = Type.Object({
     Type.Literal("error"),
   ]),
   error: Type.Optional(Type.String()),
-  iteration: Type.Number(),
   startAt: Type.Number(),
   finishedAt: Type.Optional(Type.Number()),
 });
+
+export type JobFullDtoType = Static<typeof JobFullDtoSchema>;
+export const JobFullDtoSchema = Type.Composite([
+  JobDtoSchema,
+  Type.Object({
+    metrics: Type.Optional(Type.Record(Type.String(), Type.Number())),
+    model: Type.Optional(Type.String()),
+    parseAttempt: Type.Optional(Type.Number()),
+    response: Type.Optional(Type.String()),
+    date: Type.Optional(Type.Number()),
+    classes: Type.Optional(Type.Unknown()),
+  }),
+]);
 
 export type PageDtoType<T extends TSchema> = Static<
   ReturnType<typeof PageDtoSchema<T>>

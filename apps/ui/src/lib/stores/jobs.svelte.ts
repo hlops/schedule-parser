@@ -112,9 +112,15 @@ export function createJobsStore(options: JobsStoreOptions = {}) {
     get jobs() {
       return jobs;
     },
-    async reload(id) {
-      await fetchFn(`${baseUrl}/api/jobs/restart/${id}`, {method: 'PUT'});
+    async restart(id: string) {
+      const newId = (await fetchFn(`${baseUrl}/api/jobs/restart/${id}`, {method: 'PUT'})).text();
       await this.load();
+      return newId;
+    },
+    async createSchedule(id: string) {
+      const newId = (await fetchFn(`${baseUrl}/api/jobs/createSchedule/${id}`, {method: 'PUT'})).text();
+      await this.load();
+      return newId;
     },
     /** Размер всей выборки, не только текущей страницы */
     get total() {

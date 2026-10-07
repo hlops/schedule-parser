@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import { ParseResult } from './types';
 import { getDb } from '@schedule-parser/db';
 
 const models = [
@@ -9,7 +8,7 @@ const models = [
   'gemini-3.8-flash'
 ] as const;
 
-type Model = (typeof models)[number];
+export type Model = (typeof models)[number];
 
 interface Statistics {
   delayedUntil?: number;
@@ -20,6 +19,7 @@ interface Statistics {
 
 const getInterval = (iteration: number) => {
   switch (iteration) {
+    case 0:
     case 1:
       return 5;
     case 2:
@@ -29,7 +29,7 @@ const getInterval = (iteration: number) => {
     case 4:
       return 40;
     default:
-      return 600;
+      return 300;
   }
 };
 
@@ -76,21 +76,16 @@ class GeminiBalancer {
       .at(0);
   }
 
-  update(model: Model, result: ParseResult, retryInfo?: number) {
+  updateStatistics(model: Model, result: 'success' | 'error', retryDelay?: number) {
     const statistic = this.statistics[model];
     if (result === 'success') {
-      //
       statistic.success++;
       statistic.iteration = 0;
       statistic.delayedUntil = undefined;
-    } else if (result === 'skip') {
-      // pending
-      return;
-    } else {
-      if (retryInfo) {
+    } else if (result === 'error') {
+      if (retryDelay) {
         // 429 - You exceeded your current quota
         statistic.delayedUntil = dayjs().add(getInterval(statistic.iteration), 'seconds').valueOf();
-        statistic.iteration = 0;
       } else {
         // 503 - This model is currently experiencing high demand
         statistic.failures++;

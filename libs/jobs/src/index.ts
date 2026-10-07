@@ -1,9 +1,14 @@
 import { getDb } from '@schedule-parser/db';
 import { createCheckJob, processCheckJob } from './checks';
-import { createJob } from './job';
-import { CheckJob, Job, ParseJob } from '@schedule-parser/shared';
+import { CheckJob, ParseJob, ScheduleJob } from '@schedule-parser/shared';
 import { processParseJob } from './parse';
+import { processScheduleJob } from './schedule';
 
+/**
+ * Функция процессинга картинки, стартующая цепочку джобов.
+ *
+ * @param fileName - Имя файла.
+ */
 export async function processImage(fileName: string): Promise<void> {
   const db = await getDb();
   if (db.data.jobs.some((job) => job.fileName === fileName)) {
@@ -36,9 +41,10 @@ export const processJobs = async (): Promise<void> => {
             await processCheckJob(job as CheckJob);
             break;
           case 'parse':
-            await processParseJob(job as ParseJob);
+            await processParseJob(db, job as ParseJob);
             break;
           case 'schedule':
+            await processScheduleJob(job as ScheduleJob)
             break;
         }
       }
@@ -49,9 +55,3 @@ export const processJobs = async (): Promise<void> => {
   }
 };
 
-export const restartJob = async (job: Job): Promise<void> => {
-  const db = await getDb();
-
-  db.data.jobs.push({ ...createJob(job.fileName, job.type), iteration: job.iteration + 1 });
-  await db.write();
-};

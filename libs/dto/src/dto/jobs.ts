@@ -4,7 +4,15 @@ export interface JobDto {
   type: 'check' | 'parse' | 'schedule';
   status: 'new' | 'processing' | 'pending' | 'done' | 'error';
   error?: string;
-  iteration: number;
   startAt: number;
   finishedAt?: number;
+}
+
+export interface JobFullDto extends JobDto {
+  metrics?: Record<string, number>;
+  model?: string;
+  parseAttempt?: number;
+  response?: string;
+  date?: number;
+  classes?: unknown;
 }

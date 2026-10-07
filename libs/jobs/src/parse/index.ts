@@ -1,24 +1,58 @@
-import { ParseJob, UPLOADS_DIR } from '@schedule-parser/shared';
-import { createJob } from '../job';
-import { join } from 'node:path';
-import { geminiBalancer, parseImage } from '@schedule-parser/gemini';
+import { MAX_PARSE_ATTEMPTS, ParseJob } from '@schedule-parser/shared';
+import { createJob, restartJob } from '../job';
+import { geminiBalancer, parseImage, RetryDelayError } from '@schedule-parser/gemini';
+import { createScheduleJob } from '../schedule';
+import { Data, getDb } from '@schedule-parser/db';
+import { Low } from 'lowdb';
 
 export const createParseJob = (fileName: string): ParseJob => ({ ...createJob(fileName, 'parse'), parseAttempt: 0 });
 
-export const processParseJob = async (job: ParseJob): Promise<void> => {
+const isRetryDelayError = (error?: unknown): error is RetryDelayError => {
+  return Array.isArray((error as RetryDelayError)?.details);
+};
+
+const getRetryDelay = (error?: unknown) => {
+  if (isRetryDelayError(error)) {
+    const retryDelay = error.details.find((item) => item['@type'] === 'type.googleapis.com/google.rpc.RetryInfo')?.retryDelay;
+
+    return retryDelay ? Number.parseInt(retryDelay) : undefined;
+  }
+
+  return undefined;
+};
+
+export const processParseJob = async (db: Low<Data>, job: ParseJob): Promise<void> => {
+  const model = geminiBalancer.getAvailableModel();
+  if (!model) {
+    // Нет доступной модели, ждем.
+    job.status = 'pending';
+    job.startAt = geminiBalancer.getNearestAvailableTime();
+    return;
+  }
+
   try {
-    const filePath = join(UPLOADS_DIR, job.fileName);
-    job.json = await parseImage(filePath);
+    const json = await parseImage(job, model);
     job.status = 'done';
-    job.finishedAt = Date.now();
+    geminiBalancer.updateStatistics(model, 'success');
+
+    // Создаем джобу загрузки расписания.
+    db.data.jobs.push(createScheduleJob(job.fileName, json));
   } catch (error) {
-    if (error instanceof Error && error.name === 'NoAvailableModelError') {
-      job.status = 'pending';
-      job.startAt = geminiBalancer.getNearestAvailableTime();
+    geminiBalancer.updateStatistics(model, 'error', getRetryDelay(error));
+    if (error instanceof Error) {
+      job.status = 'error';
+      job.error = error.message;
+
+      if (job.parseAttempt < MAX_PARSE_ATTEMPTS) {
+        // повторить
+        await restartJob(job);
+      }
     } else {
       job.status = 'error';
-      job.error = error instanceof Error ? error.message : String(error);
+      job.error = String(error);
     }
-    job.finishedAt = Date.now();
   }
+
+  job.finishedAt = Date.now();
 };
+

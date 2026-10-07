@@ -1,10 +1,12 @@
-import { RESPONSE_SCHEMA } from './schema';
 import { PROMPT_TEXT } from './prompt';
 import { readFile } from 'node:fs/promises';
-import { extname } from 'node:path';
-import { geminiBalancer } from './balancer';
-import type { HttpError } from './types';
-import { NoAvailableModelError, ResponseError } from './types';
+import { extname, join } from 'node:path';
+import { Model } from './balancer';
+import { GeminiResponse } from './response-type';
+import { ParsedScheduleSchema } from '@schedule-parser/dto';
+import { Value } from '@sinclair/typebox/value';
+import { ParseJob, UPLOADS_DIR } from '@schedule-parser/shared';
+import { Static } from '@sinclair/typebox';
 
 // todo: вынести в shared
 const MIME_BY_EXT: Record<string, string> = {
@@ -14,24 +16,11 @@ const MIME_BY_EXT: Record<string, string> = {
   '.webp': 'image/webp'
 } as const;
 
-const getRetryInfo = (error: { details: Array<{ '@type': string, retryDelay: string }> }) => {
-  if (Array.isArray(error.details)) {
-    const retryDelay = error.details.find((item) => item['@type'] === 'type.googleapis.com/google.rpc.RetryInfo')?.retryDelay;
+export const parseImage = async (job: ParseJob, model: Model): Promise<Static<typeof ParsedScheduleSchema>> => {
+  const filePath = join(UPLOADS_DIR, job.fileName);
 
-    return retryDelay ? Number.parseInt(retryDelay) : undefined;
-  }
-
-  return undefined;
-};
-
-export const parseImage = async (fileName: string): Promise<string> => {
   const apiKey = process.env['GEMINI_API_KEY'];
   const proxyUrl = process.env['GEMINI_PROXY_URL'];
-  const model = geminiBalancer.getAvailableModel();
-  if (!model) {
-    console.log('NoAvailableModelError');
-    throw new NoAvailableModelError();
-  }
 
   const url = `${proxyUrl}/v1beta/models/${model}:generateContent`;
 
@@ -41,14 +30,14 @@ export const parseImage = async (fileName: string): Promise<string> => {
 
   let buffer: Buffer;
   try {
-    buffer = await readFile(fileName);
+    buffer = await readFile(filePath);
   } catch (err) {
     throw new Error(
-      `Не удалось прочитать файл "${fileName}": ${(err as Error).message}`
+      `Не удалось прочитать файл "${filePath}": ${(err as Error).message}`
     );
   }
 
-  const ext = extname(fileName);
+  const ext = extname(filePath);
   const mimeType = MIME_BY_EXT[ext];
   if (!mimeType) {
     throw new Error(
@@ -68,61 +57,81 @@ export const parseImage = async (fileName: string): Promise<string> => {
     ],
     generationConfig: {
       responseMimeType: 'application/json',
-      responseSchema: RESPONSE_SCHEMA,
+      responseJsonSchema: ParsedScheduleSchema,
       temperature: 0.1,
       maxOutputTokens: 8192,
       thinkingConfig: { thinkingBudget: 0 }
     }
   };
 
-  console.log('fetching starts!!');
-
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey
-      },
-      body: JSON.stringify(payload)
-    });
-  } catch (err) {
-    if ((err as HttpError).code === 429) {
-      geminiBalancer.update(model, '429', getRetryInfo(err as any));
-    } else if ((err as HttpError).code === 503) {
-      geminiBalancer.update(model, '503');
-    } else {
-      geminiBalancer.update(model, 'error');
-    }
-    throw new Error(
-      `Сетевая ошибка при запросе к Gemini: ${(err as Error).message}`
-    );
-  }
-  console.log('fetching is done!!');
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => '');
-    throw new ResponseError(
-      `Gemini вернул HTTP ${response.status} ${response.statusText}: ${text}`, response
-    );
-  }
+  const response: Response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey
+    },
+    body: JSON.stringify(payload)
+  });
 
   const text = await response.text();
+  job.response = text;
 
-  // 5. Парсим ответ
-  try {
-    const json = JSON.parse(text);
-
-    geminiBalancer.update(model, 'success');
-    return json;
-  } catch (err) {
-    geminiBalancer.update(model, 'error');
-    throw new ResponseError(
-      `Gemini вернул невалидный JSON: ${(err as Error).message}`, response
+  if (!response.ok) {
+    throw new Error(
+      `Gemini вернул HTTP ${response.status} ${response.statusText}: ${text}`
     );
   }
+
+  let json: GeminiResponse;
+  try {
+    json = JSON.parse(text);
+  } catch (err) {
+    throw new Error(
+      `Gemini вернул невалидный JSON: ${(err as Error).message}`
+    );
+  }
+
+  if (json.candidates?.length !== 1) {
+    throw new Error(
+      `Gemini вернул неожиданное кол-во candidates`
+    );
+  }
+
+  if (json.candidates[0].finishReason !== 'STOP') {
+    throw new Error(
+      `Gemini вернул невалидный finishReason`
+    );
+  }
+
+  if (json.candidates[0].content.parts.length !== 1) {
+    throw new Error(
+      `Gemini вернул неожиданное кол-во parts`
+    );
+  }
+
+  if (!json.candidates[0].content.parts[0].text) {
+    throw new Error(
+      `Gemini вернул невалидный finishReason`
+    );
+  }
+
+  let schedulerJson;
+  try {
+    schedulerJson = JSON.parse(json.candidates[0].content.parts[0].text);
+  } catch {
+    throw new Error(
+      `Gemini вернул невалидный json для расписания`
+    );
+  }
+
+  if (!Value.Check(ParsedScheduleSchema, schedulerJson)) {
+    throw new Error(
+      `Gemini вернул невалидное расписание`
+    );
+  }
+
+  return JSON.parse(json.candidates[0].content.parts[0].text);
 };
 
 export { geminiBalancer } from './balancer';
-export { NoAvailableModelError } from './types';
+export * from './types';

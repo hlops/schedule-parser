@@ -15,7 +15,7 @@
   <wired-card>
     <h2 class="m-0 mb-3">Джобы ({jobsStore.total})</h2>
     <div class="scroll-container">
-      <wired-card elevation="2">
+      <wired-card elevation={2}>
         <table class="w-full">
           <thead>
           <tr class="text-center">
@@ -71,7 +71,7 @@
                   <td></td>
                   <td>
                     <a href={p('/job', { search: { id: job.id } })}>
-                      {dayjs(job.startAt).format('D MMM hh:mm:ss')}
+                      {dayjs(job.startAt).format('DD MMM hh:mm:ss')}
                     </a>
                   </td>
                   <td>

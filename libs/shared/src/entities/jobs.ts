@@ -4,7 +4,6 @@ export interface Job {
   type: 'check' | 'parse' | 'schedule'
   status: 'new' | 'processing' | 'pending' | 'done' | 'error';
   error?: string;
-  iteration: number;
   startAt: number;
   finishedAt?: number;
 }
@@ -26,10 +25,12 @@ export interface CheckJob extends Job {
 }
 
 export interface ParseJob extends Job {
+  model?: string;
   parseAttempt: number,
-  json?: string;
+  response?: string;
 }
 
 export interface ScheduleJob extends Job {
-  schedule?: string;
+  date: number;
+  classes: unknown;
 }

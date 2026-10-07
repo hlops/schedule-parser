@@ -8,3 +8,6 @@ export const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // Максимальный размер загружаемого изображения — 20 МБ
 export const MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024;
+
+// Максимальное количество попыток парсинга картинки
+export const MAX_PARSE_ATTEMPTS = 5;

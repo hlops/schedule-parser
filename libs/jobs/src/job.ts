@@ -1,14 +1,23 @@
-import { Job } from '@schedule-parser/shared';
-import { Data, getDb } from '@schedule-parser/db';
+import { Job, ParseJob } from '@schedule-parser/shared';
 import humanId from 'human-id';
-import { Low } from 'lowdb';
+import { getDb } from '@schedule-parser/db';
 
 export const createJob = (fileName: string, type: Job['type'], startAt = Date.now()): Job =>
   ({
     id: humanId(),
     fileName,
     type,
-    iteration: 0,
     status: 'new',
     startAt
   });
+
+export const restartJob = async (oldJob: Job): Promise<string> => {
+  const db = await getDb();
+  const newJob = { ...createJob(oldJob.fileName, oldJob.type) };
+  if (newJob.type === 'parse') {
+    (newJob as ParseJob).parseAttempt = (oldJob as ParseJob).parseAttempt + 1;
+  }
+  db.data.jobs.push(newJob);
+  await db.write();
+  return newJob.id;
+};

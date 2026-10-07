@@ -24,8 +24,8 @@ declare module 'svelte/elements' {
 			value?: string;
 		};
     'wired-icon-button': BaseElement & WithElevation;
-    'wired-image': BaseElement & WithElevation;
-    'wired-button': BaseElement & WithElevation;
+    'wired-image': SvelteHTMLElements['img'] & WithElevation;
+    'wired-button': SvelteHTMLElements['button'] & WithElevation;
 		'mwc-icon': BaseElement;
 	}
 }
