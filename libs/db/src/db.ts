@@ -1,8 +1,10 @@
 import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
 import { join } from 'node:path';
-import { DB_DIR, Job } from '@schedule-parser/shared';
+// todo
+import { DB_DIR } from '@schedule-parser/shared';
 import { mkdir } from 'node:fs/promises';
+import { Job } from './entities';
 
 // Типы для вашей БД
 export interface Data {

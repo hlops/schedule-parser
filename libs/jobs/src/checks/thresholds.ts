@@ -1,10 +1,10 @@
-import { CheckJob } from '@schedule-parser/shared';
+import { CheckJobDto } from '@schedule-parser/shared';
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
-export const checkThresholds = (metrics: CheckJob['metrics']) => {
+export const checkThresholds = (metrics: CheckJobDto['metrics']) => {
   if (!metrics) {
     throw new Error('Metrics not found');
   }

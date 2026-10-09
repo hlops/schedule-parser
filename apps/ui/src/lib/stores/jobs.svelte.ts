@@ -1,5 +1,4 @@
-
-import type { JobDto, PageDto } from '@schedule-parser/dto';
+import type { JobDto, PageDto } from '@schedule-parser/shared';
 
 /** Значения по умолчанию из схемы `PageQueryDto` */
 export const DEFAULT_PAGE_SIZE = 20;
@@ -113,12 +112,12 @@ export function createJobsStore(options: JobsStoreOptions = {}) {
       return jobs;
     },
     async restart(id: string) {
-      const newId = (await fetchFn(`${baseUrl}/api/jobs/restart/${id}`, {method: 'PUT'})).text();
+      const newId = (await fetchFn(`${baseUrl}/api/jobs/restart/${id}`, { method: 'PUT' })).text();
       await this.load();
       return newId;
     },
     async createSchedule(id: string) {
-      const newId = (await fetchFn(`${baseUrl}/api/jobs/createSchedule/${id}`, {method: 'PUT'})).text();
+      const newId = (await fetchFn(`${baseUrl}/api/jobs/createSchedule/${id}`, { method: 'PUT' })).text();
       await this.load();
       return newId;
     },

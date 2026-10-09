@@ -14,7 +14,7 @@
         "{options.outputPath}"
       ],
       "dependsOn": [
-        "generate-types"
+        "lib/shared:generate-schemas"
       ],
       "defaultConfiguration": "production",
       "options": {
@@ -101,21 +101,6 @@
         "production": {
           "buildTarget": "api:build:production"
         }
-      }
-    },
-    "generate-types": {
-      "executor": "nx:run-commands",
-      "dependsOn": [
-        { "projects": ["dto"], "target": "build" }
-      ],
-      "outputs": ["{projectRoot}/src/generated/typebox.ts"],
-      "options": {
-        "commands": [
-          "npx ts2typebox -i dist/libs/dto/index.d.ts -o apps/api/src/generated/typebox.ts",
-          "sed -i 's/JobDto,/JobDtoSchema,/g' apps/api/src/generated/typebox.ts"
-        ],
-        "parallel": false,
-        "cwd": "."
       }
     }
   }

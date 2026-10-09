@@ -1,6 +1,5 @@
 <script lang="ts">
-  import type { JobDto } from '@schedule-parser/dto';
-  import { computeJobsStatus } from '../utils/jobs';
+  import type { JobDto } from '@schedule-parser/shared';
 
   interface JobStatusProps {
     jobs: JobDto[];

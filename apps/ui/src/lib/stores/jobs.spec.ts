@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { JobDto, PageDto } from '@schedule-parser/dto';
+import type { JobDto, PageDto } from '@schedule-parser/shared';
 import { createJobsStore, DEFAULT_PAGE_SIZE } from './jobs.svelte';
 
 const job = (fileName: string): JobDto => ({

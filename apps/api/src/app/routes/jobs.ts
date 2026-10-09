@@ -1,11 +1,9 @@
 import { getDb } from '@schedule-parser/db';
 import { FastifyTypeBox } from '../types';
-import { JobDtoSchema, JobFullDtoSchema, PageDtoSchema, PageQueryDtoSchema } from '../../generated/typebox';
 import { getPage } from '../utils/common';
-import { JobDto } from '@schedule-parser/dto';
+import { AnyJobDtoSchema, JobDto, JobDtoSchema, PageDtoSchema, PageQueryDtoSchema } from '@schedule-parser/shared';
 import { Type } from '@sinclair/typebox';
-
-import { restartJob } from '../../../../../libs/jobs/src/job';
+import { restartJob } from '@schedule-parser/jobs';
 
 export default async function(fastify: FastifyTypeBox) {
   fastify.get('/api/jobs', {
@@ -44,7 +42,7 @@ export default async function(fastify: FastifyTypeBox) {
         id: Type.String()
       }),
       response: {
-        200: JobFullDtoSchema,
+        200: AnyJobDtoSchema,
         404: Type.Object({ message: Type.String() })
       }
     }

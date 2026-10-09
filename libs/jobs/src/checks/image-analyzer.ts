@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { CheckJob, UPLOADS_DIR } from '@schedule-parser/shared';
+import { CheckJobDto, UPLOADS_DIR } from '@schedule-parser/shared';
 import { existsSync } from 'node:fs';
 import sharp from 'sharp';
 
@@ -12,7 +12,7 @@ const logVipsVersion = () => {
   console.log(`[sharp] libvips ${sharp.versions.vips} (${process.platform}/${process.arch})`);
 };
 
-export const analyzeImage = async (fileName: string): Promise<CheckJob['metrics']> => {
+export const analyzeImage = async (fileName: string): Promise<CheckJobDto['metrics']> => {
   logVipsVersion();
 
   const filePath = join(UPLOADS_DIR, fileName);

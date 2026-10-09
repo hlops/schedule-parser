@@ -2,11 +2,14 @@ import { PROMPT_TEXT } from './prompt';
 import { readFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 import { Model } from './balancer';
-import { GeminiResponse } from './response-type';
-import { ParsedScheduleSchema } from '@schedule-parser/dto';
+import {
+  GeminiResponse,
+  ParsedScheduleDto,
+  ParsedScheduleDtoSchema,
+  ParseJobDto,
+  UPLOADS_DIR
+} from '@schedule-parser/shared';
 import { Value } from '@sinclair/typebox/value';
-import { ParseJob, UPLOADS_DIR } from '@schedule-parser/shared';
-import { Static } from '@sinclair/typebox';
 
 // todo: вынести в shared
 const MIME_BY_EXT: Record<string, string> = {
@@ -16,7 +19,7 @@ const MIME_BY_EXT: Record<string, string> = {
   '.webp': 'image/webp'
 } as const;
 
-export const parseImage = async (job: ParseJob, model: Model): Promise<Static<typeof ParsedScheduleSchema>> => {
+export const parseImage = async (job: ParseJobDto, model: Model): Promise<ParsedScheduleDto> => {
   const filePath = join(UPLOADS_DIR, job.fileName);
 
   const apiKey = process.env['GEMINI_API_KEY'];
@@ -57,7 +60,7 @@ export const parseImage = async (job: ParseJob, model: Model): Promise<Static<ty
     ],
     generationConfig: {
       responseMimeType: 'application/json',
-      responseJsonSchema: ParsedScheduleSchema,
+      responseJsonSchema: ParsedScheduleDtoSchema,
       temperature: 0.1,
       maxOutputTokens: 8192,
       thinkingConfig: { thinkingBudget: 0 }
@@ -124,7 +127,7 @@ export const parseImage = async (job: ParseJob, model: Model): Promise<Static<ty
     );
   }
 
-  if (!Value.Check(ParsedScheduleSchema, schedulerJson)) {
+  if (!Value.Check(ParsedScheduleDtoSchema, schedulerJson)) {
     throw new Error(
       `Gemini вернул невалидное расписание`
     );

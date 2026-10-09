@@ -1,6 +1,6 @@
 <script lang="ts">
   import ky from 'ky';
-  import type { JobFullDto } from '@schedule-parser/dto';
+  import type { JobDto, CheckJobDto, ParseJobDto, ScheduleJobDto, CalendarJobDto } from '@schedule-parser/shared';
   import { p } from '../router';
   import { JsonView } from '@zerodevx/svelte-json-view';
   import { jobsStore } from '../stores/jobs.svelte';
@@ -12,15 +12,49 @@
    * `ky` сам отклоняет промис на любом не-2xx статусе (`HTTPError`),
    * поэтому 404 из `GET /api/job` попадает в ветку `{:catch}`.
    */
-  const job = $derived(ky.get('api/job', { searchParams: { id: String(id) } }).json<JobFullDto>());
+  const job = $derived(ky.get('api/job', { searchParams: { id: String(id) } }).json<JobDto>());
 </script>
+
+{#snippet checkJobView(job: CheckJobDto)}
+  <li>Метрики:
+    <JsonView json={job.metrics} depth={1} />
+  </li>
+{/snippet}
+
+{#snippet parseJobView(job: ParseJobDto)}
+  <li>
+    parseAttempt: {job.parseAttempt}
+  </li>
+  {#if job.response}
+    <li>
+      response:
+      <JsonView json={JSON.parse(job.response)} depth={1} />
+    </li>
+  {/if}
+  <wired-button onclick={() => jobsStore.createSchedule(job.id).then(id => {searchParams.set('id', id);})}>
+    Создать расписание
+  </wired-button>
+{/snippet}
+
+{#snippet scheduleJobView(job: ScheduleJobDto)}
+  <JsonView json={job} depth={1} />
+  <li>
+    date: {job.date}
+  </li>
+  <li>
+    classes: {job.classes}
+  </li>
+{/snippet}
+
+{#snippet calendarJobView(job: CalendarJobDto)}
+{/snippet}
 
 <section>
   <wired-card>
     {#await job}
     {:then value}
       <h2 class="m-0 mb-3">Джоба {value.id}</h2>
-      <ul class="content list-['-_'] list-outside px-5" >
+      <ul class="content list-['-_'] list-outside px-5">
         <li>Картинка: <a
           href={`uploads/${value.fileName}`}
           target="_blank"
@@ -39,29 +73,13 @@
           </div>
         {/if}
         {#if value.type === 'check'}
-          <li>Метрики: <JsonView json={value.metrics} depth={1} /></li>
+          {@render checkJobView(value)}
         {:else if value.type === 'parse'}
-          <li>
-            parseAttempt: {value.parseAttempt}
-          </li>
-          {#if value.response}
-            <li>
-              response:
-              <JsonView json={JSON.parse(value.response)} depth={1} />
-            </li>
-          {/if}
-            <wired-button onclick={() => jobsStore.createSchedule(value.id).then(id => {
-              searchParams.set('id', id);
-            })}>Создать расписание
-            </wired-button>
+          {@render parseJobView(value)}
         {:else if value.type === 'schedule'}
-          <JsonView json={value} depth={1} />
-          <li>
-            date: {value.date}
-          </li>
-          <li>
-            classes: {value.classes}
-          </li>
+          {@render scheduleJobView(value)}
+        {:else if value.type === 'upload'}
+          {@render calendarJobView(value)}
         {/if}
       </ul>
     {:catch error}

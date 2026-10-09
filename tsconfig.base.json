@@ -33,8 +33,8 @@
       "@schedule-parser/jobs": [
         "./libs/jobs/src/index.ts"
       ],
-      "@schedule-parser/dto": [
-        "./libs/dto/src/index.ts"
+      "@schedule-parser/tools": [
+        "./tools/src/index.ts"
       ]
     }
   },

@@ -1,8 +1,9 @@
 import { getDb } from '@schedule-parser/db';
 import { createCheckJob, processCheckJob } from './checks';
-import { CheckJob, ParseJob, ScheduleJob } from '@schedule-parser/shared';
+import { CalendarJobDto, CheckJobDto, ParseJobDto, ScheduleJobDto } from '@schedule-parser/shared';
 import { processParseJob } from './parse';
 import { processScheduleJob } from './schedule';
+import { processUploadJob } from './upload';
 
 /**
  * Функция процессинга картинки, стартующая цепочку джобов.
@@ -36,16 +37,25 @@ export const processJobs = async (): Promise<void> => {
         job.status = 'processing';
         await db.write();
 
-        switch (job.type) {
-          case 'check':
-            await processCheckJob(job as CheckJob);
-            break;
-          case 'parse':
-            await processParseJob(db, job as ParseJob);
-            break;
-          case 'schedule':
-            await processScheduleJob(job as ScheduleJob)
-            break;
+        try {
+          switch (job.type) {
+            case 'check':
+              await processCheckJob(job as CheckJobDto);
+              break;
+            case 'parse':
+              await processParseJob(db, job as ParseJobDto);
+              break;
+            case 'schedule':
+              await processScheduleJob(job as ScheduleJobDto);
+              break;
+            case 'upload':
+              await processUploadJob(job as CalendarJobDto);
+              break;
+          }
+        } catch (err) {
+          job.status = 'error';
+          job.error = err instanceof Error ? err.message : String(err);
+          job.finishedAt = Date.now();
         }
       }
     } finally {
@@ -55,3 +65,4 @@ export const processJobs = async (): Promise<void> => {
   }
 };
 
+export { restartJob } from './job';
