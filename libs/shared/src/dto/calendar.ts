@@ -1,6 +1,6 @@
 export interface CalendarInstance {
   id: string;
-  calendar: string;
+  calendarId: string;
   description: string;
   type: 'HA',
   grade: string,

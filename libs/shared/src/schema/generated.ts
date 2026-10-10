@@ -6,7 +6,7 @@ import { Type, TSchema } from "@sinclair/typebox";
 
 export const CalendarInstanceSchema = Type.Object({
   id: Type.String(),
-  calendar: Type.String(),
+  calendarId: Type.String(),
   description: Type.String(),
   type: Type.Literal("HA"),
   grade: Type.String(),
@@ -249,7 +249,7 @@ export const CalendarJobDtoSchema = Type.Composite([
   JobDtoSchema,
   Type.Object({
     date: Type.Number(),
-    calendar: CalendarInstanceSchema,
+    calendarId: Type.String(),
     events: Type.Array(CalendarEventDtoSchema),
   }),
 ]);

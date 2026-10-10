@@ -21,7 +21,7 @@ export const processScheduleJob = async (job: ScheduleJobDto): Promise<boolean> 
       const db = await getDb();
 
       db.data.jobs.push(createUploadJob(job.fileName, {
-        calendar: calendarInstance,
+        calendarId: calendarInstance.id,
         date: job.date,
         events: clz.events
       }));
