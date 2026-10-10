@@ -26,6 +26,7 @@ let busy = false;
 export const processJobs = async (): Promise<void> => {
   if (!busy) {
     const db = await getDb();
+    let needSave = false;
 
     try {
       busy = true;
@@ -40,16 +41,16 @@ export const processJobs = async (): Promise<void> => {
         try {
           switch (job.type) {
             case 'check':
-              await processCheckJob(job as CheckJobDto);
+              needSave = needSave || await processCheckJob(job as CheckJobDto);
               break;
             case 'parse':
-              await processParseJob(db, job as ParseJobDto);
+              needSave = needSave || await processParseJob(db, job as ParseJobDto);
               break;
             case 'schedule':
-              await processScheduleJob(job as ScheduleJobDto);
+              needSave = needSave || await processScheduleJob(job as ScheduleJobDto);
               break;
             case 'upload':
-              await processUploadJob(job as CalendarJobDto);
+              needSave = needSave || await processUploadJob(job as CalendarJobDto);
               break;
           }
         } catch (err) {
@@ -59,7 +60,10 @@ export const processJobs = async (): Promise<void> => {
         }
       }
     } finally {
-      await db.write();
+      if (needSave) {
+        console.log('writing');
+        await db.write();
+      }
       busy = false;
     }
   }

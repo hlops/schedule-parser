@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { beforeEach, describe, expect, it } from 'vitest';
 import App from './App.svelte';
-import { DEFAULT_TAB, TABS } from './lib/tabs';
+import { DEFAULT_TAB, TABS } from './tabs';
 
 const tabLabels = () =>
 	screen.getAllByRole('tab').map((tab) => tab.textContent?.trim());

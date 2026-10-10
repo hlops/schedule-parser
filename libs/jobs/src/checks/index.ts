@@ -8,7 +8,7 @@ import { createParseJob } from '../parse';
 export const createCheckJob = (fileName: string): CheckJobDto => createJob(fileName, 'check');
 
 /** Считает метрики изображения и сохраняет их в задачу */
-export const processCheckJob = async (job: CheckJobDto): Promise<void> => {
+export const processCheckJob = async (job: CheckJobDto): Promise<boolean> => {
   job.metrics = await analyzeImage(job.fileName);
   checkThresholds(job.metrics);
   job.status = 'done';
@@ -16,4 +16,6 @@ export const processCheckJob = async (job: CheckJobDto): Promise<void> => {
 
   const db = await getDb();
   db.data.jobs.push(createParseJob(job.fileName));
+
+  return true;
 };

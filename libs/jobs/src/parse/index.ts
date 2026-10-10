@@ -21,13 +21,13 @@ const getRetryDelay = (error?: unknown) => {
   return undefined;
 };
 
-export const processParseJob = async (db: Low<Data>, job: ParseJobDto): Promise<void> => {
+export const processParseJob = async (db: Low<Data>, job: ParseJobDto): Promise<boolean> => {
   const model = geminiBalancer.getAvailableModel();
   if (!model) {
     // Нет доступной модели, ждем.
     job.status = 'pending';
     job.startAt = geminiBalancer.getNearestAvailableTime();
-    return;
+    return false;
   }
 
   try {
@@ -38,6 +38,7 @@ export const processParseJob = async (db: Low<Data>, job: ParseJobDto): Promise<
 
     // Создаем джобу загрузки расписания.
     db.data.jobs.push(createScheduleJob(job.fileName, json));
+    return true;
   } catch (error) {
     job.status = 'error';
     job.finishedAt = Date.now();
@@ -53,5 +54,7 @@ export const processParseJob = async (db: Low<Data>, job: ParseJobDto): Promise<
       job.error = String(error);
     }
   }
+
+  return false;
 };
 

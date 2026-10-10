@@ -253,10 +253,3 @@ export const CalendarJobDtoSchema = Type.Composite([
     events: Type.Array(CalendarEventDtoSchema),
   }),
 ]);
-
-export const AnyJobDtoSchema = Type.Union([
-  CheckJobDtoSchema,
-  ParseJobDtoSchema,
-  ScheduleJobDtoSchema,
-  CalendarJobDtoSchema,
-]);

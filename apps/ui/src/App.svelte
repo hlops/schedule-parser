@@ -1,8 +1,8 @@
 <script lang="ts">
-	import './lib/wired';
+	import './wired';
 	import { Router } from 'sv-router';
-	import { navigate, route } from './lib/router';
-	import { TABS } from './lib/tabs';
+	import { navigate, route } from './router';
+	import { TABS } from './tabs';
   import dayjs from 'dayjs';
   import 'dayjs/locale/ru';
 

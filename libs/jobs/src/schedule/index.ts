@@ -12,7 +12,7 @@ export const createScheduleJob = (fileName: string, json: ParsedScheduleDto):
   classes: json.classes
 });
 
-export const processScheduleJob = async (job: ScheduleJobDto): Promise<void> => {
+export const processScheduleJob = async (job: ScheduleJobDto): Promise<boolean> => {
   // получаем список классов
   for (const clz of job.classes as ClassScheduleDto[]) {
     const { grade } = clz as ClassScheduleDto;
@@ -29,4 +29,6 @@ export const processScheduleJob = async (job: ScheduleJobDto): Promise<void> => 
   }
 
   job.status = 'done';
+
+  return true;
 };

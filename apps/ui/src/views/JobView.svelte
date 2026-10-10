@@ -61,6 +61,7 @@
           rel="noopener noreferrer"
           aria-label={`Открыть картинку ${value.fileName}`}
         >{value.fileName}</a></li>
+        <li>Тип: {value.type}</li>
         <li>Статус: {value.status}</li>
         {#if value.error}
           <wired-divider />
