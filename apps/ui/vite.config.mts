@@ -58,7 +58,7 @@ export default defineConfig(() => ({
     // Vitest внешнит пакет из node_modules и не скомпилирует Svelte-файл.
     server: {
       deps: {
-        inline: ['sv-router']
+        inline: ['sv-router', '@zerodevx/svelte-json-view']
       }
     }
   }

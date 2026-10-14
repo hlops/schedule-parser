@@ -6,6 +6,24 @@ import { Type } from '@sinclair/typebox';
 import { restartJob } from '@schedule-parser/jobs';
 
 export default async function(fastify: FastifyTypeBox) {
+  fastify.get('/api/jobs/all', {
+    schema: {
+      description: 'returns a list of all the available',
+      tags: ['jobs', 'list'],
+      summary: 'get available jobs',
+      querystring: PageQueryDtoSchema,
+      response: {
+        200: PageDtoSchema(AnyJobDtoSchema)
+      }
+    }
+  }, async request => {
+    const { from, pageSize } = request.query;
+
+    const db = await getDb();
+    const reversed = [...db.data.jobs].reverse();
+    return getPage(reversed, from, pageSize);
+  });
+
   fastify.get('/api/jobs', {
     schema: {
       description: 'returns a list of all the available jobs grouped by filename',

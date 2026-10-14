@@ -77,7 +77,7 @@ export const parseImage = async (job: ParseJobDto, model: Model): Promise<Parsed
   });
 
   const text = await response.text();
-  job.response = text;
+  job.response = text as any;
 
   if (!response.ok) {
     throw new Error(
@@ -93,6 +93,7 @@ export const parseImage = async (job: ParseJobDto, model: Model): Promise<Parsed
       `Gemini вернул невалидный JSON: ${(err as Error).message}`
     );
   }
+  job.response = json;
 
   if (json.candidates?.length !== 1) {
     throw new Error(

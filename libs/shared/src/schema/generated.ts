@@ -215,7 +215,7 @@ export const ParseJobDtoSchema = Type.Composite([
   Type.Object({
     model: Type.Optional(Type.String()),
     parseAttempt: Type.Number(),
-    response: Type.Optional(Type.String()),
+    response: Type.Optional(Type.Union([Type.String(), GeminiResponseSchema])),
   }),
 ]);
 
@@ -253,3 +253,12 @@ export const CalendarJobDtoSchema = Type.Composite([
     events: Type.Array(CalendarEventDtoSchema),
   }),
 ]);
+
+export const ModelsStatisticsDtoSchema = Type.Record(
+  Type.String(),
+  Type.Object({
+    iteration: Type.Number(),
+    success: Type.Number(),
+    failures: Type.Number(),
+  })
+);

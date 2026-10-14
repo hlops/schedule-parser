@@ -23,6 +23,7 @@
             <th>картинка/дата</th>
             <th>проверка</th>
             <th>парсинг</th>
+            <th>расписание</th>
             <th>загрузка</th>
             <th></th>
           </tr>
@@ -55,6 +56,9 @@
                 <JobStatus jobs={jobs} type="schedule" />
               </td>
               <td>
+                <JobStatus jobs={jobs} type="upload" />
+              </td>
+              <td>
                 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
                 <wired-icon-button onclick={() => openState[jobId] = !openState[jobId]}>
                   {#if openState[jobId]}
@@ -82,6 +86,9 @@
                   </td>
                   <td>
                     <JobStatus jobs={[job]} type="schedule" />
+                  </td>
+                  <td>
+                    <JobStatus jobs={[job]} type="upload" />
                   </td>
                 </tr>
               {/each}

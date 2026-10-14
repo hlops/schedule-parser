@@ -1,4 +1,4 @@
-import { CalendarEventDto, ClassScheduleDto, CalendarInstance } from '@schedule-parser/shared';
+import { CalendarEventDto, ClassScheduleDto, CalendarInstance, GeminiResponse } from '@schedule-parser/shared';
 
 export interface Job {
   id: string;
@@ -6,8 +6,10 @@ export interface Job {
   type: 'check' | 'parse' | 'schedule' | 'upload';
   status: 'new' | 'processing' | 'pending' | 'done' | 'error';
   error?: string;
+  errorCode?: number;
   startAt: number;
   finishedAt?: number;
+  archived?: boolean;
 }
 
 /** Метрики изображения для CheckJob */
@@ -28,8 +30,8 @@ export interface CheckJob extends Job {
 
 export interface ParseJob extends Job {
   model?: string;
-  parseAttempt: number,
-  response?: string;
+  parseAttempt?: number,
+  response?: GeminiResponse;
 }
 
 export interface ScheduleJob extends Job {

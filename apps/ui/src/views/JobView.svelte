@@ -1,10 +1,11 @@
 <script lang="ts">
   import ky from 'ky';
-  import type { JobDto, CheckJobDto, ParseJobDto, ScheduleJobDto, CalendarJobDto } from '@schedule-parser/shared';
+  import type { CalendarJobDto, CheckJobDto, JobDto, ParseJobDto, ScheduleJobDto } from '@schedule-parser/shared';
   import { p } from '../router';
   import { JsonView } from '@zerodevx/svelte-json-view';
   import { jobsStore } from '../stores/jobs.svelte';
   import { searchParams } from 'sv-router';
+  import dayjs from 'dayjs';
 
   /** Идентификатор джобы из строки запроса: `/job?id=<id>` */
   const id = $derived(searchParams.get('id'));
@@ -22,13 +23,14 @@
 {/snippet}
 
 {#snippet parseJobView(job: ParseJobDto)}
+  <li>Модель: {job.model}</li>
   <li>
     parseAttempt: {job.parseAttempt}
   </li>
   {#if job.response}
     <li>
       response:
-      <JsonView json={JSON.parse(job.response)} depth={1} />
+      <JsonView json={typeof job.response === 'string' ? JSON.parse(job.response) : job.response} depth={0} />
     </li>
   {/if}
   <wired-button onclick={() => jobsStore.createSchedule(job.id).then(id => {searchParams.set('id', id);})}>
@@ -47,6 +49,16 @@
 {/snippet}
 
 {#snippet calendarJobView(job: CalendarJobDto)}
+  <wired-button onclick={() => jobsStore.restart(job.id).then(id => { searchParams.set('id', id); })}>
+    Перезапустить
+  </wired-button>
+  <li>
+    date: {dayjs(job.date).format('DD MMM YYYY')}
+  </li>
+  <li>
+    events:
+    <JsonView json={job.events} depth={1} />
+  </li>
 {/snippet}
 
 <section>

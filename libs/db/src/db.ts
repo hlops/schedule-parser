@@ -5,11 +5,12 @@ import { join } from 'node:path';
 import { DB_DIR } from '@schedule-parser/shared';
 import { mkdir } from 'node:fs/promises';
 import { Job } from './entities';
+import { ModelsStatistics } from './entities/models';
 
 // Типы для вашей БД
 export interface Data {
   jobs: Job[];
-  models: Record<string, unknown>;
+  models: Record<string, ModelsStatistics>;
 }
 
 // Синглтон-экземпляр

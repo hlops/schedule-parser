@@ -31,6 +31,7 @@ export const processParseJob = async (db: Low<Data>, job: ParseJobDto): Promise<
   }
 
   try {
+    job.model = model;
     const json = await parseImage(job, model);
     job.status = 'done';
     job.finishedAt = Date.now();
@@ -57,4 +58,3 @@ export const processParseJob = async (db: Low<Data>, job: ParseJobDto): Promise<
 
   return false;
 };
-

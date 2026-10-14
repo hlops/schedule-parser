@@ -78,6 +78,7 @@ class GeminiBalancer {
 
   updateStatistics(model: Model, result: 'success' | 'error', retryDelay?: number) {
     const statistic = this.statistics[model];
+    console.log('updateStatistics', model, retryDelay, statistic);
     if (result === 'success') {
       statistic.success++;
       statistic.iteration = 0;
@@ -85,9 +86,13 @@ class GeminiBalancer {
     } else if (result === 'error') {
       if (retryDelay) {
         // 429 - You exceeded your current quota
-        statistic.delayedUntil = dayjs().add(getInterval(statistic.iteration), 'seconds').valueOf();
+        statistic.delayedUntil = dayjs().add(retryDelay, 'seconds').valueOf();
+        statistic.failures++;
+        statistic.iteration = 0;
+        console.log('set delay', model, statistic.delayedUntil);
       } else {
         // 503 - This model is currently experiencing high demand
+        statistic.delayedUntil = dayjs().add(getInterval(statistic.iteration), 'seconds').valueOf();
         statistic.failures++;
         statistic.iteration++;
       }

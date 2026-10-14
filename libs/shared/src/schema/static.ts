@@ -38,7 +38,7 @@ export const AnyJobDtoSchema = OneOf(
     withLiteral(CheckJobDtoSchema, 'type', 'check'),
     withLiteral(ParseJobDtoSchema, 'type', 'parse'),
     withLiteral(ScheduleJobDtoSchema, 'type', 'schedule'),
-    withLiteral(CalendarJobDtoSchema, 'type', 'calendar')
+    withLiteral(CalendarJobDtoSchema, 'type', 'upload')
   ],
   'type'
 );

@@ -1,9 +1,10 @@
-import { getDb } from '@schedule-parser/db';
+import { Data, getDb, Job } from '@schedule-parser/db';
 import { createCheckJob, processCheckJob } from './checks';
 import { CalendarJobDto, CheckJobDto, ParseJobDto, ScheduleJobDto } from '@schedule-parser/shared';
 import { processParseJob } from './parse';
 import { processScheduleJob } from './schedule';
 import { processUploadJob } from './upload';
+import { Low } from 'lowdb';
 
 /**
  * Функция процессинга картинки, стартующая цепочку джобов.
@@ -20,44 +21,46 @@ export async function processImage(fileName: string): Promise<void> {
   await db.write();
 }
 
+const processJob = (db: Low<Data>, job: Job) => {
+  switch (job.type) {
+    case 'check':
+      return processCheckJob(job as CheckJobDto);
+    case 'parse':
+      return processParseJob(db, job as ParseJobDto);
+    case 'schedule':
+      return processScheduleJob(job as ScheduleJobDto);
+    case 'upload':
+      return processUploadJob(job as CalendarJobDto);
+  }
+};
+
 let busy = false;
+let needSave = false;
+let isFirstIteration = true;
 
 /** Обрабатывает все задачи, готовые к запуску (status: 'new' и startAt <= now) */
 export const processJobs = async (): Promise<void> => {
   if (!busy) {
     const db = await getDb();
-    let needSave = false;
+    needSave = false;
 
     try {
-      busy = true;
-
       const now = Date.now();
-      const readyJobs = db.data.jobs.filter(job => ['new', 'processing', 'pending'].includes(job.status) && job.startAt <= now);
+      const permittedStates = isFirstIteration ? ['new', 'processing', 'pending'] : ['new', 'pending'];
+      isFirstIteration = false;
+      const readyJobs = db.data.jobs.filter(job => permittedStates.includes(job.status) && job.startAt <= now);
 
       for (const job of readyJobs) {
         job.status = 'processing';
         await db.write();
 
-        try {
-          switch (job.type) {
-            case 'check':
-              needSave = needSave || await processCheckJob(job as CheckJobDto);
-              break;
-            case 'parse':
-              needSave = needSave || await processParseJob(db, job as ParseJobDto);
-              break;
-            case 'schedule':
-              needSave = needSave || await processScheduleJob(job as ScheduleJobDto);
-              break;
-            case 'upload':
-              needSave = needSave || await processUploadJob(job as CalendarJobDto);
-              break;
-          }
-        } catch (err) {
+        processJob(db, job).then(() => {
+          needSave = true;
+        }).catch(err => {
           job.status = 'error';
           job.error = err instanceof Error ? err.message : String(err);
           job.finishedAt = Date.now();
-        }
+        });
       }
     } finally {
       if (needSave) {
