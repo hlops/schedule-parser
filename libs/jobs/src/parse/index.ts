@@ -1,4 +1,4 @@
-import { MAX_PARSE_ATTEMPTS, ParseJobDto } from '@schedule-parser/shared';
+import { MAX_PARSE_ATTEMPTS, ParsedScheduleDto, ParseJobDto } from '@schedule-parser/shared';
 import { createJob, restartJob } from '../job';
 import { geminiBalancer, parseImage, RetryDelayError } from '@schedule-parser/gemini';
 import { createScheduleJob } from '../schedule';
@@ -21,11 +21,10 @@ const getRetryDelay = (error?: unknown) => {
   return undefined;
 };
 
-export const processParseJob = async (db: Low<Data>, job: ParseJobDto): Promise<boolean> => {
+export const processParseJob = async (job: ParseJobDto): Promise<boolean | ParsedScheduleDto> => {
   const model = geminiBalancer.getAvailableModel();
   if (!model) {
-    // Нет доступной модели, ждем.
-    job.status = 'pending';
+    // Wait for available model.
     job.startAt = geminiBalancer.getNearestAvailableTime();
     return false;
   }
@@ -33,28 +32,10 @@ export const processParseJob = async (db: Low<Data>, job: ParseJobDto): Promise<
   try {
     job.model = model;
     const json = await parseImage(job, model);
-    job.status = 'done';
-    job.finishedAt = Date.now();
     geminiBalancer.updateStatistics(model, 'success');
-
-    // Создаем джобу загрузки расписания.
-    db.data.jobs.push(createScheduleJob(job.fileName, json));
-    return true;
-  } catch (error) {
-    job.status = 'error';
-    job.finishedAt = Date.now();
-    geminiBalancer.updateStatistics(model, 'error', getRetryDelay(error));
-    if (error instanceof Error) {
-      job.error = error.message;
-
-      if (job.parseAttempt < MAX_PARSE_ATTEMPTS) {
-        // повторить
-        await restartJob(job);
-      }
-    } else {
-      job.error = String(error);
-    }
+    return json;
+  } catch (err) {
+    geminiBalancer.updateStatistics(model, 'error', getRetryDelay(err));
+    throw err;
   }
-
-  return false;
 };

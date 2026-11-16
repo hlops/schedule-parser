@@ -87,9 +87,9 @@ export default async function(fastify: FastifyTypeBox) {
       summary: 'restart job',
       response: {
         200: Type.String(),
-        400: Type.Object({ message: Type.String() }),
         404: Type.Object({ message: Type.String() }),
-        409: Type.Object({ message: Type.String() })
+        409: Type.Object({ message: Type.String() }),
+        500: Type.Object({ message: Type.String() })
       }
     }
   }, async (request, response) => {
@@ -100,14 +100,14 @@ export default async function(fastify: FastifyTypeBox) {
       response.status(404).send({ message: 'Not found' });
     }
 
-    if (job.status !== 'error') {
+    if (job.type !== 'upload' && job.status !== 'error') {
       response.status(409).send({ message: 'Invalid job status' });
     }
 
     try {
-      return await restartJob(job);
+      return await restartJob(db, job);
     } catch (e) {
-      response.status(400).send({ message: e.message });
+      response.status(500).send({ message: e.message });
     }
   });
 
@@ -143,7 +143,7 @@ export default async function(fastify: FastifyTypeBox) {
     }
 
     try {
-      return await restartJob(job);
+      return await restartJob(db, job);
     } catch (e) {
       response.status(400).send({ message: e.message });
     }

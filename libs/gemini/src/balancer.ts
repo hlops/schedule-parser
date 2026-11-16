@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import { getDb } from '@schedule-parser/db';
 
 const models = [
   'gemini-3.5-flash',
@@ -20,14 +19,15 @@ interface Statistics {
 const getInterval = (iteration: number) => {
   switch (iteration) {
     case 0:
-    case 1:
       return 5;
-    case 2:
+    case 1:
       return 10;
-    case 3:
+    case 2:
       return 20;
+    case 3:
+      return 30;
     case 4:
-      return 40;
+      return 60;
     default:
       return 300;
   }
@@ -51,34 +51,22 @@ class GeminiBalancer {
     return acc;
   }, {} as Record<Model, Statistics>);
 
-  constructor() {
-    getDb().then(db => {
-      this.statistics = {
-        ...models.reduce<Record<Model, Statistics>>((acc, name) => {
-          acc[name] = {
-            iteration: 0,
-            success: 0,
-            failures: 0
-          };
-          return acc;
-        }, {} as Record<Model, Statistics>),
-        ...db.data.models
-      };
-
-      db.data.models = this.statistics;
-    });
-  }
-
   getAvailableModel() {
-    return [...models]
+    const model = [...models]
       .filter(model => !this.statistics[model].delayedUntil || dayjs().isAfter(this.statistics[model].delayedUntil))
       .sort((a, b) => getRating(this.statistics[b]) - getRating(this.statistics[a]))
       .at(0);
+
+    if (model) {
+      const statistic = this.statistics[model];
+      // set delayed while executing (mark model as busy for 3 minutes).
+      statistic.delayedUntil = dayjs().add(3, 'minutes').valueOf();
+    }
+    return model;
   }
 
   updateStatistics(model: Model, result: 'success' | 'error', retryDelay?: number) {
     const statistic = this.statistics[model];
-    console.log('updateStatistics', model, retryDelay, statistic);
     if (result === 'success') {
       statistic.success++;
       statistic.iteration = 0;
@@ -89,7 +77,6 @@ class GeminiBalancer {
         statistic.delayedUntil = dayjs().add(retryDelay, 'seconds').valueOf();
         statistic.failures++;
         statistic.iteration = 0;
-        console.log('set delay', model, statistic.delayedUntil);
       } else {
         // 503 - This model is currently experiencing high demand
         statistic.delayedUntil = dayjs().add(getInterval(statistic.iteration), 'seconds').valueOf();
@@ -102,7 +89,7 @@ class GeminiBalancer {
   getNearestAvailableTime() {
     return Math.min(
       ...models.map(
-        name => dayjs().add(this.statistics[name].delayedUntil || 0, 'seconds').valueOf()
+        name => this.statistics[name].delayedUntil || 0
       )
     );
   }

@@ -28,7 +28,6 @@ export async function getEventsForDate(
   }
 
   const events: HaCalendarEvent[] = await res.json();
-  console.log(entityId)
 
   // Преобразуем формат HA → наш CalendarEventDto
   return events.map((e) => ({

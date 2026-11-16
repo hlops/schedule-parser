@@ -5,9 +5,18 @@
   import RelativeTime from 'dayjs/plugin/relativeTime';
   import { p } from '../router';
   import type { ParseJob } from '@schedule-parser/db';
+  import Pagination from '../controls/Pagination.svelte';
 
   dayjs.extend(RelativeTime);
-  const jobsPromise = $derived(ky.get('api/jobs/all', {}).json<PageDto<JobDto>>());
+
+  let currentPage = $state(1);
+  let pageSize = 25;
+  const jobsPromise = $derived(ky.get('api/jobs/all', {
+    searchParams: {
+      from: (currentPage - 1) * pageSize,
+      pageSize
+    }
+  }).json<PageDto<JobDto>>());
 
   const getModel = (job: JobDto) => (job as ParseJob).model;
 </script>
@@ -48,6 +57,7 @@
         {/each}
         </tbody>
       </table>
+      <Pagination bind:currentPage totalPages="{Math.ceil(jobs.total / pageSize)}" />
     {:catch error}
       Ошибка: {error}
     {/await}

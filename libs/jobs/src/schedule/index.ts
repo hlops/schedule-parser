@@ -2,8 +2,9 @@ import { ClassScheduleDto, ParsedScheduleDto, ScheduleJobDto } from '@schedule-p
 import { createJob } from '../job';
 import dayjs from 'dayjs';
 import { calendarInstances } from '../constants';
-import { getDb } from '@schedule-parser/db';
+import { Data } from '@schedule-parser/db';
 import { createUploadJob } from '../upload';
+import { Low } from 'lowdb';
 
 export const createScheduleJob = (fileName: string, json: ParsedScheduleDto):
   ScheduleJobDto => ({
@@ -12,14 +13,16 @@ export const createScheduleJob = (fileName: string, json: ParsedScheduleDto):
   classes: json.classes
 });
 
-export const processScheduleJob = async (job: ScheduleJobDto): Promise<boolean> => {
+export const processScheduleJob = async (_job: ScheduleJobDto): Promise<boolean> => {
+  return true;
+};
+
+export const createChainedUploadJob = (db: Low<Data>, job: ScheduleJobDto) => {
   // получаем список классов
   for (const clz of job.classes as ClassScheduleDto[]) {
     const { grade } = clz as ClassScheduleDto;
     const calendarInstance = calendarInstances.find((ci) => ci.grade === grade);
     if (calendarInstance) {
-      const db = await getDb();
-
       db.data.jobs.push(createUploadJob(job.fileName, {
         calendarId: calendarInstance.id,
         date: job.date,
@@ -27,8 +30,4 @@ export const processScheduleJob = async (job: ScheduleJobDto): Promise<boolean> 
       }));
     }
   }
-
-  job.status = 'done';
-
-  return true;
 };

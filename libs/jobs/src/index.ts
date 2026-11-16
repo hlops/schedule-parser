@@ -1,10 +1,18 @@
 import { Data, getDb, Job } from '@schedule-parser/db';
 import { createCheckJob, processCheckJob } from './checks';
-import { CalendarJobDto, CheckJobDto, ParseJobDto, ScheduleJobDto } from '@schedule-parser/shared';
-import { processParseJob } from './parse';
-import { processScheduleJob } from './schedule';
+import {
+  CalendarJobDto,
+  CheckJobDto,
+  MAX_PARSE_ATTEMPTS,
+  ParsedScheduleDto,
+  ParseJobDto,
+  ScheduleJobDto
+} from '@schedule-parser/shared';
+import { createParseJob, processParseJob } from './parse';
+import { createChainedUploadJob, createScheduleJob, processScheduleJob } from './schedule';
 import { processUploadJob } from './upload';
 import { Low } from 'lowdb';
+import { restartJob } from './job';
 
 /**
  * Функция процессинга картинки, стартующая цепочку джобов.
@@ -21,16 +29,43 @@ export async function processImage(fileName: string): Promise<void> {
   await db.write();
 }
 
-const processJob = (db: Low<Data>, job: Job) => {
+const processJob = (job: Job) => {
   switch (job.type) {
     case 'check':
       return processCheckJob(job as CheckJobDto);
     case 'parse':
-      return processParseJob(db, job as ParseJobDto);
+      return processParseJob(job as ParseJobDto);
     case 'schedule':
       return processScheduleJob(job as ScheduleJobDto);
     case 'upload':
       return processUploadJob(job as CalendarJobDto);
+  }
+};
+
+const createChainedJob = (db: Low<Data>, job: Job, result: boolean | ParsedScheduleDto) => {
+  console.debug('create chained job from', JSON.stringify(job, undefined, 2));
+  switch (job.type) {
+    case 'check':
+      db.data.jobs.push(createParseJob(job.fileName));
+      break;
+    case 'parse':
+      db.data.jobs.push(createScheduleJob(job.fileName, result as ParsedScheduleDto));
+      break;
+    case 'schedule':
+      createChainedUploadJob(db, job as ScheduleJobDto);
+      break;
+    case 'upload':
+      break;
+  }
+};
+
+const restartErrorJob = async (db: Low<Data>, job: Job) => {
+  console.debug('restart error job', JSON.stringify(job, undefined, 2));
+  if (job.type === 'parse') {
+    if ((job as ParseJobDto).parseAttempt < MAX_PARSE_ATTEMPTS) {
+      // повторить
+      await restartJob(db, job);
+    }
   }
 };
 
@@ -41,6 +76,7 @@ let isFirstIteration = true;
 /** Обрабатывает все задачи, готовые к запуску (status: 'new' и startAt <= now) */
 export const processJobs = async (): Promise<void> => {
   if (!busy) {
+    busy = true;
     const db = await getDb();
     needSave = false;
 
@@ -51,20 +87,37 @@ export const processJobs = async (): Promise<void> => {
       const readyJobs = db.data.jobs.filter(job => permittedStates.includes(job.status) && job.startAt <= now);
 
       for (const job of readyJobs) {
+        needSave = job.status !== 'processing';
         job.status = 'processing';
-        await db.write();
 
-        processJob(db, job).then(() => {
+        try {
+          console.debug('processing job', JSON.stringify(job, undefined, 2));
+          const result = await processJob(job);
+          if (result) {
+            console.debug('processed ok');
+            needSave = true;
+            job.status = 'done';
+            job.finishedAt = Date.now();
+
+            createChainedJob(db, job, result);
+          } else {
+            job.status = 'pending';
+            console.debug('job was pended');
+          }
+        } catch (err) {
           needSave = true;
-        }).catch(err => {
+          job.finishedAt = Date.now();
           job.status = 'error';
           job.error = err instanceof Error ? err.message : String(err);
-          job.finishedAt = Date.now();
-        });
+        }
+
+        if (job.status === 'error') {
+          await restartErrorJob(db, job);
+        }
       }
     } finally {
       if (needSave) {
-        console.log('writing');
+        console.debug('writing modified jobs to db');
         await db.write();
       }
       busy = false;

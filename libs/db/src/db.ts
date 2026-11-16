@@ -5,12 +5,10 @@ import { join } from 'node:path';
 import { DB_DIR } from '@schedule-parser/shared';
 import { mkdir } from 'node:fs/promises';
 import { Job } from './entities';
-import { ModelsStatistics } from './entities/models';
 
 // Типы для вашей БД
 export interface Data {
   jobs: Job[];
-  models: Record<string, ModelsStatistics>;
 }
 
 // Синглтон-экземпляр
@@ -25,7 +23,7 @@ export async function getDb(): Promise<Low<Data>> {
   const adapter = new JSONFile<Data>(file);
 
   // Дефолтные данные, если файла нет
-  const defaultData: Data = { jobs: [], models: {} };
+  const defaultData: Data = { jobs: [] };
 
   instance = new Low<Data>(adapter, defaultData);
   await instance.read();
